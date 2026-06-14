@@ -1,0 +1,1564 @@
+@import "tailwindcss";
+
+/* ===================================================================
+   SHOP ACC HUY TRUNG — DESIGN SYSTEM
+   Phong cách: Tối (ink) + Lửa neon (fire) + Vàng gold sang trọng.
+   Token đặt trong @theme -> tự sinh utility (bg-ink-900, text-fire-500...).
+=================================================================== */
+@theme {
+  /* Fonts (biến do next/font đặt ở <html>) */
+  --font-sans: var(--font-be-vietnam), system-ui, "Segoe UI", sans-serif;
+  --font-display: var(--font-oswald), var(--font-be-vietnam), sans-serif;
+
+  /* Ink — nền đen than nhiều sắc độ */
+  --color-ink-950: #07070b;
+  --color-ink-900: #0c0c12;
+  --color-ink-850: #111119;
+  --color-ink-800: #16161f;
+  --color-ink-750: #1c1c27;
+  --color-ink-700: #24242f;
+  --color-ink-600: #33333f;
+  --color-ink-500: #4a4a57;
+
+  /* Fire — lửa cam -> đỏ (màu hành động chính, chất Free Fire) */
+  --color-fire-300: #ffb27a;
+  --color-fire-400: #ff8a3d;
+  --color-fire-500: #ff6a00;
+  --color-fire-600: #ff4d00;
+  --color-ember-400: #ff4d4d;
+  --color-ember-500: #ff2020;
+  --color-ember-600: #e01212;
+
+  /* Gold — vàng ánh kim (điểm nhấn VIP/đẳng cấp) */
+  --color-gold-200: #ffe9a8;
+  --color-gold-300: #ffd75e;
+  --color-gold-400: #f3c64a;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #b8902a;
+
+  /* Volt — điện xanh / neon phụ (tăng độ "ngầu", đa sắc) */
+  --color-volt-300: #7dd3fc;
+  --color-volt-400: #38bdf8;
+  --color-volt-500: #06b6d4;
+  --color-volt-600: #0891b2;
+}
+
+:root {
+  --background: #07070b;
+  --foreground: #f3f3f6;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(48rem 48rem at 88% -12%, rgba(255, 106, 0, 0.12), transparent 60%),
+    radial-gradient(42rem 42rem at -12% 8%, rgba(255, 32, 32, 0.09), transparent 55%),
+    radial-gradient(36rem 36rem at 50% 120%, rgba(212, 175, 55, 0.06), transparent 60%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+/* Tiêu đề mang chất thể thao/esports */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+::selection {
+  background: rgba(255, 106, 0, 0.32);
+  color: #fff;
+}
+
+/* Thanh cuộn tối */
+* {
+  scrollbar-color: #2a2a36 transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#33333f, #1c1c27);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(var(--color-fire-600), var(--color-ember-600));
+  background-clip: padding-box;
+}
+
+/* ----------------------------- Tiện ích ----------------------------- */
+
+/* Chữ gradient lửa */
+.text-gradient-fire {
+  background: linear-gradient(100deg, #ffd75e 0%, var(--color-fire-500) 40%, var(--color-ember-500) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-gradient-gold {
+  background: linear-gradient(100deg, #fff3c4 0%, var(--color-gold-300) 45%, var(--color-gold-600) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hiệu ứng phát sáng */
+.glow-fire {
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 8px 30px -8px rgba(255, 77, 0, 0.55);
+}
+.glow-gold {
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.4), 0 8px 30px -10px rgba(212, 175, 55, 0.45);
+}
+.text-glow-fire {
+  text-shadow: 0 0 18px rgba(255, 106, 0, 0.55);
+}
+
+/* Khung phát sáng đẳng cấp (gold) — dùng cho slideshow ảnh */
+.frame-glow {
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.12),
+    0 12px 44px -14px rgba(0, 0, 0, 0.75),
+    0 0 52px -14px rgba(212, 175, 55, 0.55);
+}
+
+/* Bề mặt / thẻ tối */
+.surface {
+  background: linear-gradient(180deg, rgba(28, 28, 39, 0.9), rgba(14, 14, 20, 0.9));
+  border: 1px solid var(--color-ink-700);
+  border-radius: 1rem;
+  backdrop-filter: blur(6px);
+}
+
+/* Viền gradient lửa (dùng cho card nổi bật) */
+.border-fire {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-ink-850), var(--color-ink-850)) padding-box,
+    linear-gradient(135deg, var(--color-fire-500), var(--color-ember-500)) border-box;
+}
+
+/* ------------------------------ Nút ------------------------------ */
+.btn-fire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(120deg, var(--color-fire-500), var(--color-ember-500));
+  box-shadow: 0 10px 30px -10px rgba(255, 77, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.btn-fire:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 14px 38px -10px rgba(255, 77, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn-fire:active {
+  transform: translateY(0);
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #1a1406;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(120deg, var(--color-gold-300), var(--color-gold-500));
+  box-shadow: 0 10px 30px -12px rgba(212, 175, 55, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.btn-gold:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #f3f3f6;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-ink-600);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.btn-ghost:hover {
+  background: rgba(255, 106, 0, 0.12);
+  border-color: var(--color-fire-500);
+  transform: translateY(-1px);
+}
+
+/* Nút cũ trên các trang chưa nâng cấp -> nâng lên gradient lửa */
+.btn-primary {
+  background: linear-gradient(120deg, var(--color-fire-500), var(--color-ember-500));
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  box-shadow: 0 8px 24px -10px rgba(255, 77, 0, 0.7);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+}
+
+/* ----------------------------- Form ----------------------------- */
+.field {
+  width: 100%;
+  border: 1px solid var(--color-ink-700);
+  border-radius: 0.625rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  background: rgba(12, 12, 18, 0.8);
+  color: #f3f3f6;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field::placeholder {
+  color: #6b6b78;
+}
+.field:focus {
+  border-color: var(--color-fire-500);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.18);
+}
+
+select.field {
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 2.5rem;
+  background-color: rgba(12, 12, 18, 0.92);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-fire-400) 50%),
+    linear-gradient(135deg, var(--color-fire-400) 50%, transparent 50%),
+    linear-gradient(to right, rgba(255, 106, 0, 0.18), rgba(255, 255, 255, 0.08));
+  background-position:
+    calc(100% - 1.15rem) 50%,
+    calc(100% - 0.85rem) 50%,
+    calc(100% - 2.15rem) 50%;
+  background-size:
+    0.36rem 0.36rem,
+    0.36rem 0.36rem,
+    1px 60%;
+  background-repeat: no-repeat;
+}
+select.field:hover {
+  border-color: rgba(255, 106, 0, 0.72);
+  box-shadow: 0 0 18px -12px rgba(255, 106, 0, 0.85);
+}
+select.field option {
+  background-color: #0c0c12;
+  color: #f3f3f6;
+  font-weight: 600;
+}
+select.field option:checked,
+select.field option:hover {
+  background-color: var(--color-fire-500);
+  color: #fff;
+}
+select.field option:disabled {
+  color: #6b6b78;
+}
+
+/* Class .input cũ (giữ cho trang chưa nâng cấp) */
+.input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  background: #fff;
+  color: #0f172a;
+  outline: none;
+}
+.input:focus {
+  border-color: #f97316;
+}
+
+/* ----------------------------- Chip/Tag ----------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-ink-700);
+  color: #d7d7de;
+}
+
+/* Góc vát "chiến" */
+.clip-slant {
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 94% 100%, 0 100%);
+}
+
+/* ----------------------------- line-clamp ----------------------------- */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ----------------------------- Animations ----------------------------- */
+@keyframes chip-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.chip-pop {
+  animation: chip-pop 0.18s ease-out;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 0 22px -6px rgba(255, 77, 0, 0.5); }
+  50% { box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.6), 0 0 34px -4px rgba(255, 77, 0, 0.8); }
+}
+.animate-glow {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(220%); }
+}
+.shine-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shine-on-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.shine-on-hover:hover::after {
+  animation: shine 0.9s ease;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow,
+  .animate-float,
+  .animate-rise,
+  .chip-pop,
+  .logo-electric,
+  .spark {
+    animation: none !important;
+  }
+}
+
+/* ===================================================================
+   PHIÊN BẢN "CHIẾN" — góc sắc/vát, viền neon, logo điện giật
+=================================================================== */
+
+/* Góc vát chéo kiểu HUD game (sắc, không bo tròn) */
+.clip-chien {
+  clip-path: polygon(
+    14px 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%,
+    0 14px
+  );
+}
+.clip-chien-sm {
+  clip-path: polygon(
+    9px 0,
+    100% 0,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    0 100%,
+    0 9px
+  );
+}
+
+/* Thẻ "chiến": nền tối, góc sắc, vạch neon trên đỉnh, glow khi hover */
+.card-chien {
+  position: relative;
+  background: linear-gradient(180deg, #16161f 0%, #0c0c12 100%);
+  border: 1px solid var(--color-ink-700);
+  border-radius: 0.45rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.card-chien:hover {
+  transform: translateY(-4px);
+}
+
+/* Viền gradient neon (đa sắc) — dùng làm khung "chiến" */
+.neon-edge {
+  position: relative;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, #14141b, #0a0a0f) padding-box,
+    linear-gradient(135deg, var(--color-fire-500), var(--color-volt-500) 55%, var(--color-gold-400)) border-box;
+  border: 1px solid transparent;
+}
+
+/* Đường gân neon ngang (vạch chiến) */
+.rule-neon {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-fire-500), var(--color-volt-500), transparent);
+}
+
+/* ----------------------- LOGO ĐIỆN GIẬT ----------------------- */
+.logo-electric {
+  filter:
+    drop-shadow(0 0 4px rgba(255, 140, 40, 0.9))
+    drop-shadow(0 0 10px rgba(255, 70, 0, 0.6));
+  animation: logo-zap 3.6s steps(1, end) infinite;
+}
+@keyframes logo-zap {
+  0%, 6%, 12%, 100% {
+    filter:
+      drop-shadow(0 0 4px rgba(255, 140, 40, 0.9))
+      drop-shadow(0 0 11px rgba(255, 70, 0, 0.6));
+    transform: translate(0, 0);
+  }
+  /* nháy điện xanh + giật nhẹ */
+  3% {
+    filter:
+      drop-shadow(0 0 6px rgba(125, 211, 252, 1))
+      drop-shadow(0 0 16px rgba(56, 189, 248, 0.9));
+    transform: translate(0.6px, -0.4px);
+  }
+  8% {
+    filter:
+      drop-shadow(0 0 7px rgba(255, 255, 255, 1))
+      drop-shadow(0 0 18px rgba(125, 211, 252, 0.9));
+    transform: translate(-0.6px, 0.5px);
+  }
+  9% {
+    transform: translate(0.4px, 0.3px);
+  }
+}
+
+/* Tia điện chớp quanh logo */
+.spark {
+  animation: spark-flicker 3.6s steps(1, end) infinite;
+  opacity: 0;
+}
+.spark-2 {
+  animation-delay: 0.25s;
+}
+.spark-3 {
+  animation-delay: 1.7s;
+}
+@keyframes spark-flicker {
+  0%, 100% { opacity: 0; }
+  3%, 4% { opacity: 1; }
+  8% { opacity: 0.9; }
+  8.5% { opacity: 0; }
+}
+
+/* ===================================================================
+   KHUNG CHÉM GÓC CÓ VIỀN NEON (fix mất rìa) + viền chạy + glow + điện
+   Cách dùng:
+   <a class="frame-chien"> <div class="frame-chien-in"> ...nội dung... </div> </a>
+=================================================================== */
+.frame-chien {
+  --chamfer: 14px;
+  position: relative;
+  padding: 1px; /* độ dày rìa neon (mỏng) */
+  clip-path: polygon(
+    var(--chamfer) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%,
+    0 100%,
+    0 var(--chamfer)
+  );
+  background: linear-gradient(
+    115deg,
+    var(--color-fire-500),
+    var(--color-volt-500) 42%,
+    var(--color-gold-400) 70%,
+    var(--color-ember-500)
+  );
+  background-size: 280% 100%;
+  animation: edge-flow 7s linear infinite;
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.55));
+  transition: transform 0.22s ease, filter 0.22s ease;
+}
+.frame-chien:hover {
+  transform: translateY(-5px);
+  filter: drop-shadow(0 0 16px rgba(255, 90, 0, 0.65))
+    drop-shadow(0 0 28px rgba(56, 189, 248, 0.4));
+  animation-duration: 2.2s; /* viền chạy nhanh hơn khi hover */
+}
+.frame-chien.no-lift:hover {
+  transform: none;
+}
+
+/* Khung chém góc MỎNG, viền tĩnh — cho ô tìm kiếm (nét trắng, focus -> lửa) */
+.frame-chien-thin {
+  --chamfer: 9px;
+  position: relative;
+  padding: 1px;
+  clip-path: polygon(
+    var(--chamfer) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%,
+    0 100%,
+    0 var(--chamfer)
+  );
+  background: rgba(255, 255, 255, 0.55);
+  transition: background 0.16s ease;
+}
+.frame-chien-thin:focus-within {
+  background: linear-gradient(120deg, var(--color-fire-500), var(--color-ember-500));
+}
+.frame-chien-thin-in {
+  position: relative;
+  clip-path: polygon(
+    var(--chamfer) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%,
+    0 100%,
+    0 var(--chamfer)
+  );
+  background-color: var(--color-ink-900);
+}
+.frame-chien-in {
+  position: relative;
+  height: 100%;
+  clip-path: polygon(
+    var(--chamfer) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%,
+    0 100%,
+    0 var(--chamfer)
+  );
+  background-color: #0c0c12;
+}
+
+@keyframes edge-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 280% 50%; }
+}
+
+/* Lóe điện chạy ngang khi hover (overlay trong .frame-chien-in) */
+.zap-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgba(125, 211, 252, 0.45) 48%,
+    rgba(255, 255, 255, 0.65) 50%,
+    rgba(255, 106, 0, 0.45) 52%,
+    transparent 65%
+  );
+  transform: translateX(-120%) skewX(-12deg);
+}
+.group:hover .zap-sweep {
+  animation: zap-sweep 0.75s ease;
+}
+@keyframes zap-sweep {
+  0% { opacity: 0; transform: translateX(-120%) skewX(-12deg); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(160%) skewX(-12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-chien { animation: none !important; }
+  .zap-sweep { display: none; }
+}
+
+/* Khung chém góc TĨNH, nhẹ — viền xám mảnh, hover sáng nhẹ (gallery ảnh) */
+.frame-soft {
+  position: relative;
+  padding: 1px;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  background: var(--color-ink-600);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.frame-soft:hover {
+  background: linear-gradient(135deg, var(--color-fire-500), var(--color-gold-400));
+  transform: translateY(-2px);
+}
+.frame-soft-in {
+  position: relative;
+  height: 100%;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  background-color: var(--color-ink-900);
+}
+
+/* Khung chém góc ĐỎ NHẸ tĩnh (stepper, form order) — không màu chạy, glow đỏ dịu */
+.frame-ember {
+  position: relative;
+  padding: 1px;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  background: linear-gradient(135deg, #9a3a12, #6b1a1a 58%, #2c1010);
+  filter: drop-shadow(0 0 13px rgba(150, 38, 0, 0.22));
+}
+.frame-ember-in {
+  position: relative;
+  height: 100%;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  background-color: var(--color-ink-900);
+}
+
+.valuation-result {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 0.35rem;
+  background:
+    radial-gradient(18rem 12rem at 100% 0%, rgba(212, 175, 55, 0.12), transparent 62%),
+    linear-gradient(180deg, rgba(17, 17, 25, 0.44), rgba(7, 7, 11, 0.72));
+  box-shadow: 0 20px 52px -44px rgba(212, 175, 55, 0.65);
+}
+.valuation-result {
+  padding: 1.25rem;
+}
+.valuation-result::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(212, 175, 55, 0.75), transparent 28%, transparent 72%, rgba(255, 106, 0, 0.55)) top / 100% 1px no-repeat,
+    linear-gradient(90deg, rgba(255, 106, 0, 0.35), transparent 28%, transparent 72%, rgba(212, 175, 55, 0.6)) bottom / 100% 1px no-repeat;
+}
+.valuation-form {
+  position: relative;
+}
+.valuation-form::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-top: 1.5rem;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.65), rgba(255, 106, 0, 0.45), transparent);
+}
+.valuation-hud-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 106, 0, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  padding: 0.75rem 1.8rem;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 0 22px -10px rgba(255, 77, 0, 0.6);
+  transition: transform 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+.valuation-hud-btn:hover {
+  transform: translateY(-2px);
+  color: var(--color-fire-300);
+  box-shadow: 0 0 38px -8px rgba(255, 77, 0, 0.85);
+}
+.valuation-hud-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+.valuation-hud-btn::before,
+.valuation-hud-btn::after {
+  content: "";
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+.valuation-hud-btn::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid var(--color-fire-500);
+  border-left: 2px solid var(--color-fire-500);
+}
+.valuation-hud-btn::after {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid var(--color-ember-500);
+  border-bottom: 2px solid var(--color-ember-500);
+}
+.valuation-hud-btn:hover::before,
+.valuation-hud-btn:hover::after {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ------------------------- Admin control center ------------------------- */
+.admin-shell {
+  color: #f3f3f6;
+}
+.admin-content {
+  min-width: 0;
+}
+.admin-sidebar {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 106, 0, 0.22);
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(17, 17, 25, 0.96), rgba(7, 7, 11, 0.96)),
+    radial-gradient(28rem 18rem at 0% 0%, rgba(255, 106, 0, 0.14), transparent 60%);
+  padding: 0.85rem;
+  box-shadow: 0 22px 60px -34px rgba(255, 77, 0, 0.65);
+}
+.admin-sidebar::before,
+.admin-sidebar::after {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+.admin-sidebar::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid var(--color-fire-500);
+  border-left: 2px solid var(--color-fire-500);
+}
+.admin-sidebar::after {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid var(--color-ember-500);
+  border-bottom: 2px solid var(--color-ember-500);
+}
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  padding: 0.72rem 0.78rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+.admin-nav-item:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+}
+.admin-nav-active {
+  border-color: rgba(255, 106, 0, 0.45);
+  background: rgba(255, 106, 0, 0.12);
+  color: #fff;
+  box-shadow: 0 0 24px -18px rgba(255, 77, 0, 0.95);
+  text-shadow: 0 0 14px rgba(255, 106, 0, 0.45);
+}
+.admin-hero-panel,
+.admin-panel,
+.admin-metric-card,
+.admin-alert-card,
+.admin-revenue-card,
+.admin-quick-action {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(17, 17, 25, 0.92), rgba(7, 7, 11, 0.94)),
+    radial-gradient(34rem 18rem at 0% 0%, rgba(255, 106, 0, 0.12), transparent 62%);
+  box-shadow: 0 22px 62px -44px rgba(255, 77, 0, 0.7);
+}
+.admin-hero-panel::before,
+.admin-panel::before,
+.admin-metric-card::before,
+.admin-alert-card::before,
+.admin-revenue-card::before,
+.admin-quick-action::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(255, 106, 0, 0.8), transparent 18%, transparent 82%, rgba(56, 189, 248, 0.55)) top / 100% 1px no-repeat,
+    linear-gradient(90deg, rgba(56, 189, 248, 0.5), transparent 20%, transparent 80%, rgba(255, 77, 0, 0.75)) bottom / 100% 1px no-repeat;
+  opacity: 0.8;
+}
+.admin-hero-panel {
+  background:
+    radial-gradient(44rem 18rem at 100% 0%, rgba(56, 189, 248, 0.13), transparent 64%),
+    linear-gradient(115deg, rgba(17, 17, 25, 0.94), rgba(7, 7, 11, 0.96) 58%, rgba(18, 40, 48, 0.72));
+}
+.admin-section-title {
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.admin-section-title::after {
+  content: "";
+  display: block;
+  width: 54px;
+  height: 2px;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, var(--color-fire-500), transparent);
+}
+.admin-revenue-card {
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(18rem 12rem at 100% 0%, rgba(255, 230, 150, 0.18), transparent 62%),
+    linear-gradient(135deg, var(--color-fire-500), var(--color-ember-600) 62%, #5d160b);
+  border-color: rgba(255, 186, 80, 0.36);
+}
+.admin-alert-card {
+  display: block;
+  overflow: hidden;
+  padding: 1rem;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+.admin-alert-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 106, 0, 0.45);
+}
+.admin-alert-gold {
+  color: var(--color-gold-300);
+  background:
+    radial-gradient(18rem 10rem at 100% 0%, rgba(212, 175, 55, 0.16), transparent 58%),
+    linear-gradient(180deg, rgba(17, 17, 25, 0.92), rgba(7, 7, 11, 0.94));
+}
+.admin-alert-fire {
+  color: var(--color-fire-300);
+  background:
+    radial-gradient(18rem 10rem at 100% 0%, rgba(255, 77, 0, 0.16), transparent 58%),
+    linear-gradient(180deg, rgba(17, 17, 25, 0.92), rgba(7, 7, 11, 0.94));
+}
+.admin-alert-green {
+  color: #6ee7b7;
+  background:
+    radial-gradient(18rem 10rem at 100% 0%, rgba(45, 212, 191, 0.16), transparent 58%),
+    linear-gradient(180deg, rgba(17, 17, 25, 0.92), rgba(7, 7, 11, 0.94));
+}
+.admin-metric-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  overflow: hidden;
+  padding: 1rem;
+}
+.admin-metric-icon {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+.admin-metric-fire .admin-metric-icon {
+  color: var(--color-fire-300);
+  background: rgba(255, 106, 0, 0.12);
+}
+.admin-metric-gold .admin-metric-icon {
+  color: var(--color-gold-300);
+  background: rgba(212, 175, 55, 0.12);
+}
+.admin-metric-green .admin-metric-icon {
+  color: #6ee7b7;
+  background: rgba(45, 212, 191, 0.12);
+}
+.admin-metric-cyan .admin-metric-icon {
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.12);
+}
+.admin-quick-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.admin-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+.admin-quick-action {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  overflow: hidden;
+  padding: 1rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.admin-quick-action:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 106, 0, 0.45);
+  background:
+    linear-gradient(180deg, rgba(24, 24, 34, 0.94), rgba(9, 9, 14, 0.96)),
+    radial-gradient(20rem 12rem at 100% 0%, rgba(255, 106, 0, 0.18), transparent 64%);
+}
+.admin-quick-icon {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.05);
+}
+.admin-quick-fire .admin-quick-icon {
+  color: var(--color-fire-300);
+  background: rgba(255, 106, 0, 0.13);
+}
+.admin-quick-cyan .admin-quick-icon {
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.13);
+}
+.admin-quick-gold .admin-quick-icon {
+  color: var(--color-gold-300);
+  background: rgba(212, 175, 55, 0.13);
+}
+.admin-quick-green .admin-quick-icon {
+  color: #6ee7b7;
+  background: rgba(45, 212, 191, 0.13);
+}
+.admin-filter-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(auto-fit, minmax(150px, 0.8fr));
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(17, 17, 25, 0.86), rgba(7, 7, 11, 0.9)),
+    radial-gradient(24rem 10rem at 0% 0%, rgba(56, 189, 248, 0.08), transparent 64%);
+  padding: 0.85rem;
+  box-shadow: 0 18px 48px -40px rgba(56, 189, 248, 0.65);
+}
+.admin-filter-panel .field,
+.admin-filter-panel .input {
+  min-height: 2.85rem;
+}
+.admin-id-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.65rem;
+  border: 1px solid rgba(56, 189, 248, 0.36);
+  border-radius: 0.4rem;
+  background: rgba(56, 189, 248, 0.1);
+  color: #7dd3fc;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.admin-post-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(17, 17, 25, 0.9), rgba(7, 7, 11, 0.94)),
+    radial-gradient(32rem 13rem at 100% 0%, rgba(255, 106, 0, 0.09), transparent 62%);
+  padding: 1rem;
+  box-shadow: 0 18px 52px -42px rgba(255, 77, 0, 0.7);
+}
+.admin-post-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(255, 106, 0, 0.8), transparent 20%, transparent 80%, rgba(56, 189, 248, 0.55)) top / 100% 1px no-repeat;
+}
+.admin-author-panel {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.85rem;
+}
+.admin-author-title {
+  margin-bottom: 0.55rem;
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.admin-author-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 0.55rem;
+}
+.admin-info-chip {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  min-width: 0; /* Ensures it shrinks if needed */
+  border: 1px solid var(--color-fire-500); /* Orange-red border */
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.035);
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.1), rgba(255, 32, 32, 0.08)); /* Subtle fire gradient */
+  padding: 0.58rem 0.68rem;
+  box-shadow: 0 0 12px -6px rgba(255, 106, 0, 0.4); /* Soft glow */
+}
+.admin-info-chip span {
+  display: block;
+  color: #7a7a87;
+  color: var(--color-fire-300); /* Lighter orange for label */
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.admin-info-chip b {
+  display: block;
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+  color: #f3f3f6;
+  color: #fff; /* White for value for contrast */
+  font-size: 0.86rem;
+}
+.admin-shell h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+/* ===================================================================
+   BẢN TIN SHOP (ANNOUNCEMENT POPUP)
+=================================================================== */
+.announcement-popup {
+  background: linear-gradient(180deg, var(--color-ink-850), var(--color-ink-900));
+  border: 1px solid var(--color-fire-500);
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 8px 30px -8px rgba(255, 77, 0, 0.55);
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.admin-shell h1::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 2px;
+  margin-top: 0.55rem;
+  background: linear-gradient(90deg, var(--color-fire-500), var(--color-ember-500), transparent);
+}
+.admin-shell .bg-white,
+.admin-shell .bg-slate-50,
+.admin-shell .bg-slate-100,
+.admin-shell .bg-amber-50,
+.admin-shell .bg-orange-50,
+.admin-shell .bg-red-50,
+.admin-shell .bg-blue-50\/60,
+.admin-shell .bg-red-50\/60,
+.admin-shell .bg-emerald-50,
+.admin-shell .bg-emerald-100,
+.admin-shell .bg-yellow-50,
+.admin-shell .bg-yellow-100,
+.admin-shell .bg-violet-50,
+.admin-shell .bg-violet-100 {
+  background-color: rgba(12, 12, 18, 0.82) !important;
+}
+.admin-shell .rounded-xl,
+.admin-shell .rounded-lg {
+  border-radius: 0.45rem !important;
+}
+.admin-shell .border-slate-100,
+.admin-shell .border-slate-200,
+.admin-shell .border-slate-300,
+.admin-shell .border-orange-200,
+.admin-shell .border-orange-300,
+.admin-shell .border-red-200,
+.admin-shell .border-blue-200,
+.admin-shell .border-amber-200,
+.admin-shell .border-emerald-200,
+.admin-shell .border-yellow-200,
+.admin-shell .border-violet-200 {
+  border-color: rgba(51, 51, 63, 0.95) !important;
+}
+.admin-shell .bg-white,
+.admin-shell .border-slate-200 {
+  box-shadow: 0 18px 54px -42px rgba(255, 77, 0, 0.55);
+}
+.admin-shell table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 720px;
+}
+.admin-shell th,
+.admin-shell td {
+  border-color: rgba(51, 51, 63, 0.9) !important;
+}
+.admin-shell thead {
+  background: rgba(255, 106, 0, 0.08) !important;
+  color: #ffb27a !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+.admin-shell tbody tr {
+  border-color: rgba(51, 51, 63, 0.9) !important;
+  color: #e7e7ee;
+  transition: background 0.16s ease;
+}
+.admin-shell tbody tr:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.admin-shell a.text-orange-600,
+.admin-shell button.text-orange-600,
+.admin-shell button.text-red-600,
+.admin-shell a.text-red-600 {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  border-bottom: 1px solid transparent;
+  font-weight: 800;
+  text-decoration: none !important;
+  transition: color 0.16s ease, border-color 0.16s ease, text-shadow 0.16s ease;
+}
+.admin-shell a.text-orange-600:hover,
+.admin-shell button.text-orange-600:hover {
+  border-color: rgba(255, 106, 0, 0.55);
+  color: var(--color-fire-200) !important;
+  text-shadow: 0 0 14px rgba(255, 106, 0, 0.35);
+}
+.admin-shell button.text-red-600:hover,
+.admin-shell a.text-red-600:hover {
+  border-color: rgba(248, 113, 113, 0.55);
+  color: #fca5a5 !important;
+  text-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+}
+.admin-shell .text-slate-400,
+.admin-shell .text-slate-500,
+.admin-shell .text-slate-600,
+.admin-shell .text-slate-700 {
+  color: #9a9aa6 !important;
+}
+.admin-shell .text-slate-800 {
+  color: #f3f3f6 !important;
+}
+.admin-shell .text-orange-600,
+.admin-shell .text-orange-700,
+.admin-shell .text-red-600,
+.admin-shell .text-red-700 {
+  color: var(--color-fire-300) !important;
+}
+.admin-shell .text-green-600,
+.admin-shell .text-green-700,
+.admin-shell .text-emerald-600,
+.admin-shell .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+.admin-shell .text-amber-600,
+.admin-shell .text-amber-700,
+.admin-shell .text-yellow-600,
+.admin-shell .text-yellow-700 {
+  color: var(--color-gold-300) !important;
+}
+.admin-shell .text-blue-600,
+.admin-shell .text-blue-700,
+.admin-shell .text-violet-600,
+.admin-shell .text-violet-700 {
+  color: #7dd3fc !important;
+}
+.admin-shell .input,
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  border-color: var(--color-ink-700) !important;
+  background: rgba(7, 7, 11, 0.72) !important;
+  color: #f3f3f6 !important;
+}
+.admin-shell .input::placeholder,
+.admin-shell input::placeholder,
+.admin-shell textarea::placeholder {
+  color: #6b6b78 !important;
+}
+.admin-shell .input:focus,
+.admin-shell input:focus,
+.admin-shell textarea:focus,
+.admin-shell select:focus {
+  border-color: var(--color-fire-500) !important;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.18) !important;
+  outline: none !important;
+}
+.admin-shell select option {
+  background: #15151b;
+  color: #f3f3f6;
+}
+.admin-shell input[type="checkbox"] {
+  accent-color: var(--color-fire-500);
+}
+.admin-shell input[type="file"] {
+  color: #9a9aa6;
+}
+.admin-shell input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  border: 1px solid rgba(255, 106, 0, 0.45);
+  border-radius: 0.45rem;
+  background: rgba(255, 106, 0, 0.12);
+  color: var(--color-fire-200);
+  padding: 0.45rem 0.75rem;
+  font-weight: 800;
+}
+.admin-shell .btn-primary,
+.admin-shell .btn-fire,
+.admin-shell button.bg-slate-800 {
+  border: 1px solid rgba(255, 106, 0, 0.45) !important;
+  border-radius: 0.5rem !important;
+  background: linear-gradient(120deg, var(--color-fire-500), var(--color-ember-500)) !important;
+  color: #fff !important;
+  font-weight: 800;
+  box-shadow: 0 14px 34px -18px rgba(255, 77, 0, 0.9);
+}
+.admin-shell .btn-ghost,
+.admin-shell button.border,
+.admin-shell a.border {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: rgba(12, 12, 18, 0.58) !important;
+  color: #e7e7ee !important;
+}
+.admin-shell button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.admin-shell .rounded-full {
+  border-radius: 0.55rem !important;
+}
+.admin-shell .bg-orange-500,
+.admin-shell .bg-red-600,
+.admin-shell .bg-green-600,
+.admin-shell .bg-amber-600 {
+  background: linear-gradient(120deg, var(--color-fire-500), var(--color-ember-500)) !important;
+  color: #fff !important;
+}
+.admin-shell .bg-green-100,
+.admin-shell .bg-blue-100,
+.admin-shell .bg-amber-100,
+.admin-shell .bg-orange-100,
+.admin-shell .bg-red-100,
+.admin-shell .bg-emerald-100,
+.admin-shell .bg-yellow-100,
+.admin-shell .bg-violet-100,
+.admin-shell .bg-slate-200 {
+  background: rgba(255, 106, 0, 0.12) !important;
+  border: 1px solid rgba(255, 106, 0, 0.28);
+  color: var(--color-fire-300) !important;
+}
+.admin-shell .bg-green-100,
+.admin-shell .bg-emerald-100 {
+  background: rgba(45, 212, 191, 0.12) !important;
+  border-color: rgba(45, 212, 191, 0.28);
+  color: #6ee7b7 !important;
+}
+.admin-shell .bg-blue-100,
+.admin-shell .bg-violet-100 {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.28);
+  color: #7dd3fc !important;
+}
+.admin-shell .bg-amber-100,
+.admin-shell .bg-yellow-100 {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.28);
+  color: var(--color-gold-300) !important;
+}
+.admin-shell dl,
+.admin-shell dd,
+.admin-shell dt {
+  color: inherit;
+}
+
+@media (min-width: 1024px) {
+  .admin-shell {
+    align-items: start;
+  }
+  .admin-sidebar {
+    position: relative !important;
+    top: auto !important;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-height: 0;
+    width: 100%;
+    height: auto;
+    padding: 0.65rem 0.75rem;
+  }
+  .admin-sidebar > div:first-child {
+    margin: 0;
+    min-width: 255px;
+    border-bottom: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 1rem 0 0.25rem;
+  }
+  .admin-sidebar > a {
+    margin-top: 0 !important;
+    min-width: 0;
+    width: auto;
+    padding-inline: 0.8rem !important;
+  }
+  .admin-nav-item {
+    justify-content: center;
+    min-height: 2.45rem;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  .admin-content {
+    position: relative;
+    width: 100%;
+  }
+  .admin-content::before {
+    content: "";
+    position: absolute;
+    inset: -1rem -0.5rem auto -0.5rem;
+    height: 11rem;
+    pointer-events: none;
+    background: radial-gradient(42rem 10rem at 50% 0%, rgba(255, 106, 0, 0.08), transparent 70%);
+    opacity: 0.75;
+  }
+  .admin-content > * {
+    position: relative;
+    z-index: 1;
+  }
+  .admin-hero-panel {
+    padding: 1.7rem !important;
+  }
+  .admin-panel {
+    padding: 1.25rem !important;
+  }
+  .admin-metric-card {
+    min-height: 6.25rem;
+    padding: 1.1rem;
+  }
+  .admin-alert-card,
+  .admin-revenue-card {
+    min-height: 8.5rem;
+  }
+  .admin-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+  }
+  .admin-summary-grid > * {
+    min-width: 0;
+  }
+  .admin-shell .bg-white,
+  .admin-shell .bg-slate-50,
+  .admin-shell .bg-slate-100 {
+    background:
+      linear-gradient(180deg, rgba(17, 17, 25, 0.9), rgba(8, 8, 13, 0.93)),
+      radial-gradient(28rem 12rem at 100% 0%, rgba(255, 106, 0, 0.08), transparent 60%) !important;
+  }
+  .admin-shell table {
+    min-width: 920px;
+  }
+  .admin-shell th {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .admin-shell td {
+    padding-top: 0.95rem !important;
+    padding-bottom: 0.95rem !important;
+  }
+  .admin-filter-panel {
+    grid-template-columns: minmax(260px, 1.35fr) repeat(auto-fit, minmax(160px, 0.7fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-shell {
+    padding-inline: 0.85rem;
+  }
+  .admin-sidebar {
+    padding: 0.75rem;
+  }
+  .admin-nav-item {
+    justify-content: center;
+    padding-inline: 0.6rem;
+    font-size: 0.78rem;
+  }
+  .admin-hero-panel,
+  .admin-panel,
+  .admin-metric-card,
+  .admin-alert-card,
+  .admin-revenue-card {
+    border-radius: 0.35rem;
+  }
+  .admin-shell h1 {
+    font-size: 1.75rem;
+  }
+  .admin-filter-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================================================
+   HIỆU ỨNG NỀN "CHIẾN" — tàn lửa bay, đèn quét, lưới động
+=================================================================== */
+@keyframes ember-rise {
+  0% { transform: translateY(20px) scale(0.7); opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(-180px) scale(0.25); opacity: 0; }
+}
+.ember {
+  position: absolute;
+  bottom: -12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffd0a0 0%, #ff6a00 55%, transparent 72%);
+  box-shadow: 0 0 8px rgba(255, 106, 0, 0.8);
+  animation: ember-rise linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sweep-x {
+  0% { transform: translateX(-30%); opacity: 0; }
+  20% { opacity: 0.5; }
+  50% { opacity: 0.5; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+.beam-sweep {
+  animation: sweep-x 9s ease-in-out infinite;
+}
+
+@keyframes hue-pan {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.bg-grid-fade {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember,
+  .beam-sweep {
+    animation: none !important;
+  }
+  .ember { display: none; }
+}
+
+/* Tàn lửa bay TOÀN MÀN HÌNH (dùng cho nền cố định site-wide) */
+@keyframes ember-float {
+  0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+  8% { opacity: 1; }
+  86% { opacity: 0.85; }
+  100% {
+    transform: translateY(calc(-100vh - 60px)) translateX(var(--drift, 14px)) scale(0.12);
+    opacity: 0;
+  }
+}
+.ember-fx {
+  position: absolute;
+  bottom: -18px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffe2b8 0%, #ff7a14 52%, transparent 72%);
+  box-shadow: 0 0 7px rgba(255, 106, 0, 0.85), 0 0 16px rgba(255, 77, 0, 0.4);
+  animation: ember-float linear infinite;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ember-fx { display: none; }
+}
+
+/* ===================================================================
+   HIỆU ỨNG MODAL "ROBOT / ĐIỆN TỬ" — scanline + tia quét HUD
+=================================================================== */
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(125, 211, 252, 0.05) 0,
+    rgba(125, 211, 252, 0.05) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+@keyframes scan-down {
+  0% { top: -6%; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-300), var(--color-fire-400), transparent);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.75);
+  animation: scan-down 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hud-flicker {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.hud-bracket {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: currentColor;
+  animation: hud-flicker 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line,
+  .hud-bracket { animation: none !important; }
+}

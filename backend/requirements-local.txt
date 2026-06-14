@@ -1,0 +1,4 @@
+# Dev local: toàn bộ production deps + driver SQL Server (chỉ cần khi
+# chạy/migrate từ SQL Server cục bộ, production không dùng).
+-r requirements.txt
+pyodbc==5.2.0
