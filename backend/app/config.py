@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Shop Acc Huy Trung"
     BASE_URL: str = "http://localhost:8000"
     CORS_ORIGINS: str = "http://localhost:3000"
+    # Regex cho phép theo mẫu origin — mặc định mọi tên miền *.vercel.app
+    # (Vercel cấp nhiều domain/preview). Để khỏi phải liệt kê từng cái.
+    CORS_ORIGIN_REGEX: str = r"https://[A-Za-z0-9-]+\.vercel\.app"
     UPLOAD_DIR: str = "uploads"
 
     # ----- Default admin (seeded on first run) -----
