@@ -18,13 +18,13 @@ const BRAND: Record<
   { image: string; eyebrow: string; heading: string; sub: string }
 > = {
   login: {
-    image: "/image/slide/slideshow1.jpeg",
+    image: "/image/slide/slideshow1.png",
     eyebrow: "Welcome back",
     heading: "Chiến binh trở lại!",
     sub: "Đăng nhập để tiếp tục săn acc giá rẻ nhất thị trường, order theo yêu cầu & quản lý giao dịch của bạn.",
   },
   register: {
-    image: "/image/slide/slideshow2.jpg",
+    image: "/image/slide/slideshow2.png",
     eyebrow: "Tân binh gia nhập",
     heading: "Lên đồ — chiến ngay!",
     sub: "Tạo tài khoản để tìm và mua acc, order & đăng bài acc Free Fire — nhanh chóng, an toàn, uy tín.",
