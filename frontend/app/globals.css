@@ -1417,6 +1417,10 @@ select.field option:disabled {
   .admin-shell {
     padding-inline: 0.85rem;
   }
+  /* Vầng sáng trang trí không được tràn ra ngoài gây cuộn ngang. */
+  .admin-content::before {
+    inset-inline: 0;
+  }
   .admin-sidebar {
     padding: 0.75rem;
   }

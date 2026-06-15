@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import ModalPortal from "../../components/ModalPortal";
 import PhoneZaloLink from "../../components/PhoneZaloLink";
 import { api } from "../../lib/api";
@@ -14,6 +17,8 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [adjusting, setAdjusting] = useState<User | null>(null);
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -36,14 +41,10 @@ export default function AdminUsersPage() {
     });
     load();
   }
-  async function remove(id: number) {
-    if (!confirm("Xóa người dùng này?")) return;
-    try {
-      await api.del(`/api/admin/users/${id}`);
-      load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "Lỗi");
-    }
+  function remove(id: number) {
+    // Xóa 1 người dùng cũng đi qua bảng tiến trình.
+    if (confirm("Xóa người dùng này? Mọi dữ liệu liên quan sẽ bị xóa."))
+      setBulk([id]);
   }
 
   return (
@@ -67,6 +68,15 @@ export default function AdminUsersPage() {
         </button>
       </div>
 
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} người dùng đã chọn? Mọi dữ liệu liên quan sẽ bị xóa.`))
+            setBulk([...sel.selected]);
+        }}
+      />
+
       {loading ? (
         <div className="text-slate-500 py-8 text-center">Đang tải...</div>
       ) : data && data.items.length ? (
@@ -74,6 +84,17 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 text-left">
               <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={
+                      data.items.length > 0 &&
+                      data.items.every((u) => sel.isSelected(u.id))
+                    }
+                    onChange={() => sel.toggleAll(data.items.map((u) => u.id))}
+                  />
+                </th>
                 <th className="p-3">Username</th>
                 <th className="p-3">Họ tên</th>
                 <th className="p-3">SĐT</th>
@@ -87,6 +108,14 @@ export default function AdminUsersPage() {
             <tbody>
               {data.items.map((u) => (
                 <tr key={u.id} className="border-t border-slate-100">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-orange-500 align-middle"
+                      checked={sel.isSelected(u.id)}
+                      onChange={() => sel.toggle(u.id)}
+                    />
+                  </td>
                   <td className="p-3 font-medium">{u.username}</td>
                   <td className="p-3">{u.full_name || "—"}</td>
                   <td className="p-3">
@@ -149,6 +178,19 @@ export default function AdminUsersPage() {
           onClose={() => setAdjusting(null)}
           onSaved={() => {
             setAdjusting(null);
+            load();
+          }}
+        />
+      )}
+
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="người dùng"
+          deleteOne={(id) => api.del(`/api/admin/users/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
             load();
           }}
         />

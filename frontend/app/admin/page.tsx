@@ -158,7 +158,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.65fr_1fr]">
-        <section className="admin-panel p-4 sm:p-5">
+        <section className="admin-panel min-w-0 overflow-hidden p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="admin-section-title">Acc & đơn 14 ngày qua</h2>
@@ -175,68 +175,35 @@ export default function AdminDashboard() {
               </span>
             </div>
           </div>
-          <div className="mt-5 flex h-56 items-end gap-1.5 sm:gap-2">
-            {stats.timeseries.map((p) => (
-              <div
-                key={p.date}
-                className="group flex min-w-0 flex-1 flex-col items-center gap-2"
-                title={`${p.date} · Acc ${p.accounts} · Đơn ${p.orders}`}
-              >
-                <div className="flex h-44 w-full items-end justify-center gap-1 rounded-t-md border-b border-ink-700/80 bg-white/[0.015] px-0.5">
-                  <div
-                    className="w-2.5 rounded-t-sm bg-gradient-to-t from-ember-600 to-fire-300 shadow-[0_0_14px_rgba(255,106,0,.32)] transition-all group-hover:brightness-125"
-                    style={{ height: `${(p.accounts / maxVal) * 100}%` }}
-                  />
-                  <div
-                    className="w-2.5 rounded-t-sm bg-gradient-to-t from-sky-700 to-sky-300 shadow-[0_0_14px_rgba(56,189,248,.28)] transition-all group-hover:brightness-125"
-                    style={{ height: `${(p.orders / maxVal) * 100}%` }}
-                  />
+          {/* Cuộn ngang BÊN TRONG khung khi màn hẹp (không đẩy cả trang). */}
+          <div className="mt-5 overflow-x-auto">
+            <div className="flex h-56 min-w-[34rem] items-end gap-1.5 sm:gap-2">
+              {stats.timeseries.map((p) => (
+                <div
+                  key={p.date}
+                  className="group flex min-w-0 flex-1 flex-col items-center gap-2"
+                  title={`${p.date} · Acc ${p.accounts} · Đơn ${p.orders}`}
+                >
+                  <div className="flex h-44 w-full items-end justify-center gap-1 rounded-t-md border-b border-ink-700/80 bg-white/[0.015] px-0.5">
+                    <div
+                      className="w-2.5 rounded-t-sm bg-gradient-to-t from-ember-600 to-fire-300 shadow-[0_0_14px_rgba(255,106,0,.32)] transition-all group-hover:brightness-125"
+                      style={{ height: `${(p.accounts / maxVal) * 100}%` }}
+                    />
+                    <div
+                      className="w-2.5 rounded-t-sm bg-gradient-to-t from-sky-700 to-sky-300 shadow-[0_0_14px_rgba(56,189,248,.28)] transition-all group-hover:brightness-125"
+                      style={{ height: `${(p.orders / maxVal) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] font-bold text-zinc-600">
+                    {p.date.slice(8)}
+                  </div>
                 </div>
-                <div className="text-[10px] font-bold text-zinc-600">
-                  {p.date.slice(8)}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="admin-panel p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="admin-section-title">Acc được quan tâm nhất</h2>
-              <p className="mt-1 text-sm text-zinc-500">Xếp theo lượt liên hệ mua.</p>
-            </div>
-            <Trophy className="h-6 w-6 text-gold-300" />
-          </div>
-          {stats.top_accounts.length ? (
-            <div className="mt-4 space-y-2.5">
-              {stats.top_accounts.map((a, i) => (
-                <Link
-                  key={`top-account-${a.id}-${i}`}
-                  href="/admin/accounts"
-                  className="group flex items-center gap-3 rounded-lg border border-ink-800 bg-white/[0.025] p-3 transition hover:border-fire-500/50 hover:bg-fire-500/10"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center clip-chien-sm bg-gradient-to-br from-ink-800 to-ink-950 text-sm font-black text-fire-300">
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-black text-white">{a.account_code}</div>
-                    <div className="mt-0.5 text-xs font-semibold text-zinc-500">
-                      {formatPrice(a.sale_price)} · {a.view_count} lượt xem
-                    </div>
-                  </div>
-                  <span className="shrink-0 rounded-md border border-fire-500/30 bg-fire-500/10 px-2 py-1 text-xs font-black text-fire-300">
-                    {a.contact_count} liên hệ
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-5 rounded-lg border border-ink-800 py-8 text-center text-sm text-zinc-500">
-              Chưa có dữ liệu.
-            </div>
-          )}
-        </section>
+        <TopAccountsPanel stats={stats} />
       </div>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -245,6 +212,75 @@ export default function AdminDashboard() {
         ))}
       </section>
     </div>
+  );
+}
+
+function TopAccountsPanel({ stats }: { stats: DashboardStats }) {
+  const [mode, setMode] = useState<"views" | "contacts">("views");
+  const list = mode === "views" ? stats.top_viewed : stats.top_accounts;
+  return (
+    <section className="admin-panel min-w-0 overflow-hidden p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="admin-section-title">Acc được quan tâm nhất</h2>
+        <Trophy className="h-6 w-6 shrink-0 text-gold-300" />
+      </div>
+      {/* Nút chuyển đổi 2 mục */}
+      <div className="mt-3 inline-flex rounded-lg border border-ink-700 bg-ink-950/60 p-1 text-xs font-bold">
+        <button
+          onClick={() => setMode("views")}
+          className={`rounded-md px-3 py-1.5 transition ${
+            mode === "views"
+              ? "bg-gradient-to-br from-fire-500 to-ember-500 text-white"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          Nhấn nhiều nhất
+        </button>
+        <button
+          onClick={() => setMode("contacts")}
+          className={`rounded-md px-3 py-1.5 transition ${
+            mode === "contacts"
+              ? "bg-gradient-to-br from-fire-500 to-ember-500 text-white"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          Liên hệ nhiều nhất
+        </button>
+      </div>
+      {list.length ? (
+        <div className="mt-4 space-y-2.5">
+          {list.map((a, i) => (
+            <Link
+              key={`top-${mode}-${a.id}-${i}`}
+              href="/admin/accounts"
+              className="group flex items-center gap-3 rounded-lg border border-ink-800 bg-white/[0.025] p-3 transition hover:border-fire-500/50 hover:bg-fire-500/10"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center clip-chien-sm bg-gradient-to-br from-ink-800 to-ink-950 text-sm font-black text-fire-300">
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-black text-white">{a.account_code}</div>
+                <div className="mt-0.5 text-xs font-semibold text-zinc-500">
+                  {formatPrice(a.sale_price)} ·{" "}
+                  {mode === "views"
+                    ? `${a.contact_count} liên hệ`
+                    : `${a.view_count} lượt xem`}
+                </div>
+              </div>
+              <span className="shrink-0 rounded-md border border-fire-500/30 bg-fire-500/10 px-2 py-1 text-xs font-black text-fire-300">
+                {mode === "views"
+                  ? `${a.view_count} lượt xem`
+                  : `${a.contact_count} liên hệ`}
+              </span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-lg border border-ink-800 py-8 text-center text-sm text-zinc-500">
+          Chưa có dữ liệu.
+        </div>
+      )}
+    </section>
   );
 }
 

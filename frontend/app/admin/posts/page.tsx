@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AdminAccountModal from "../../components/AdminAccountModal";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import Lightbox from "../../components/Lightbox";
 import PhoneZaloLink from "../../components/PhoneZaloLink";
 import { api, imageUrl } from "../../lib/api";
@@ -101,6 +104,7 @@ function PostsTab() {
     null,
   );
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -143,10 +147,8 @@ function PostsTab() {
     await api.put(`/api/admin/posts/${p.id}/pin`, { is_pinned: !p.is_pinned });
     load();
   }
-  async function remove(id: number) {
-    if (!confirm("Xóa bài đăng này?")) return;
-    await api.del(`/api/admin/posts/${id}`);
-    load();
+  function remove(id: number) {
+    if (confirm("Xóa bài đăng này? Ảnh cũng bị xóa.")) setBulk([id]);
   }
 
   return (
@@ -213,6 +215,15 @@ function PostsTab() {
             className="px-3 py-1 rounded bg-amber-600 text-white"
           >
             Từ chối
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`Xóa ${selected.size} bài đăng đã chọn? Ảnh cũng bị xóa.`))
+                setBulk([...selected]);
+            }}
+            className="px-3 py-1 rounded bg-red-600 text-white"
+          >
+            Xóa
           </button>
           <button
             onClick={() => setSelected(new Set())}
@@ -344,6 +355,18 @@ function PostsTab() {
         <Empty text="Chưa có bài đăng." />
       )}
       {data && <Pager page={page} pages={data.pages} onChange={setPage} />}
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="bài đăng"
+          deleteOne={(id) => api.del(`/api/admin/posts/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            setSelected(new Set());
+            load();
+          }}
+        />
+      )}
       {viewer && (
         <Lightbox
           images={viewer.images}
@@ -362,8 +385,10 @@ function PostContactsTab() {
   const [viewer, setViewer] = useState<{ images: string[]; start: number } | null>(
     null,
   );
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     const p = new URLSearchParams({ page: String(page), page_size: "20" });
     if (q.trim()) p.set("q", q.trim());
     api
@@ -371,6 +396,14 @@ function PostContactsTab() {
       .then(setData)
       .catch(() => setData(null));
   }, [page, q]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function removeOne(id: number) {
+    if (confirm("Xóa liên hệ này?")) setBulk([id]);
+  }
 
   if (!data) return <div className="text-slate-500 py-8 text-center">Đang tải...</div>;
 
@@ -398,6 +431,13 @@ function PostContactsTab() {
           </button>
         )}
       </div>
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} liên hệ đã chọn?`)) setBulk([...sel.selected]);
+        }}
+      />
       {!data.items.length ? (
         <Empty text="Chưa có liên hệ nào." />
       ) : (
@@ -413,6 +453,23 @@ function PostContactsTab() {
               key={c.id}
               className="bg-white rounded-lg border border-slate-200 p-4"
             >
+              <div className="flex items-center justify-between mb-2">
+                <label className="inline-flex items-center gap-2 text-xs text-slate-500">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500"
+                    checked={sel.isSelected(c.id)}
+                    onChange={() => sel.toggle(c.id)}
+                  />
+                  Chọn
+                </label>
+                <button
+                  onClick={() => removeOne(c.id)}
+                  className="text-red-600 hover:underline text-xs"
+                >
+                  Xóa
+                </button>
+              </div>
               {/* Thông tin bài đăng */}
               <div className="flex items-start gap-3">
                 {imgs.length > 0 && (
@@ -461,6 +518,18 @@ function PostContactsTab() {
       </div>
       )}
       <Pager page={page} pages={data.pages} onChange={setPage} />
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="liên hệ"
+          deleteOne={(id) => api.del(`/api/admin/post-contacts/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
       {viewer && (
         <Lightbox
           images={viewer.images}
@@ -538,6 +607,8 @@ function AccContactsTab() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [modalAcc, setModalAcc] = useState<number | null>(null);
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     const p = new URLSearchParams({ page: String(page), page_size: "20" });
@@ -555,6 +626,10 @@ function AccContactsTab() {
   async function changeStatus(id: number, status: string) {
     await api.put(`/api/admin/account-contacts/${id}`, { status });
     load();
+  }
+
+  function removeOne(id: number) {
+    if (confirm("Xóa liên hệ mua acc này?")) setBulk([id]);
   }
 
   if (!data)
@@ -590,6 +665,13 @@ function AccContactsTab() {
           </button>
         )}
       </div>
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} liên hệ mua acc đã chọn?`)) setBulk([...sel.selected]);
+        }}
+      />
       {!data.items.length ? (
         <Empty text="Chưa có liên hệ mua acc nào." />
       ) : (
@@ -597,6 +679,14 @@ function AccContactsTab() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500 text-left">
             <tr>
+              <th className="p-3 w-10">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-orange-500 align-middle"
+                  checked={data.items.length > 0 && data.items.every((c) => sel.isSelected(c.id))}
+                  onChange={() => sel.toggleAll(data.items.map((c) => c.id))}
+                />
+              </th>
               <th className="p-3">ID</th>
               <th className="p-3">Acc</th>
               <th className="p-3">Khách</th>
@@ -604,11 +694,20 @@ function AccContactsTab() {
               <th className="p-3">Tài khoản</th>
               <th className="p-3">Thời gian</th>
               <th className="p-3">Trạng thái xử lý</th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((c) => (
               <tr key={c.id} className="border-t border-slate-100">
+                <td className="p-3">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={sel.isSelected(c.id)}
+                    onChange={() => sel.toggle(c.id)}
+                  />
+                </td>
                 <td className="p-3">
                   <span className="admin-id-badge">#{c.id}</span>
                 </td>
@@ -650,6 +749,14 @@ function AccContactsTab() {
                     ))}
                   </select>
                 </td>
+                <td className="p-3">
+                  <button
+                    onClick={() => removeOne(c.id)}
+                    className="text-red-600 hover:underline text-xs"
+                  >
+                    Xóa
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -657,6 +764,18 @@ function AccContactsTab() {
       </div>
       )}
       <Pager page={page} pages={data.pages} onChange={setPage} />
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="liên hệ"
+          deleteOne={(id) => api.del(`/api/admin/account-contacts/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
       {modalAcc !== null && (
         <AdminAccountModal
           accountId={modalAcc}

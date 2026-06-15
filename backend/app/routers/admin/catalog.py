@@ -4,7 +4,14 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.deps import require_admin
 from app.database import get_db
-from app.models import Account, AccountImage, DescriptionTag, PriceCategory, Shop
+from app.models import (
+    Account,
+    AccountContact,
+    AccountImage,
+    DescriptionTag,
+    PriceCategory,
+    Shop,
+)
 from app.schemas.catalog import (
     AccountCreate,
     AccountListItem,
@@ -375,15 +382,28 @@ def update_account(
     return account
 
 
+def _delete_account(db: Session, account: Account) -> None:
+    """Xóa acc + dọn mọi thứ liên quan (liên hệ mua) + ảnh trong kho.
+
+    account_contacts có FK tới accounts nhưng KHÔNG cascade nên phải xóa tay,
+    nếu không acc đã từng có người 'Liên hệ mua' sẽ không xóa được (lỗi FK).
+    """
+    # Xóa ảnh khỏi storage: từng ảnh (gồm ảnh cũ lưu ở gốc) + cả thư mục của acc.
+    for img in account.images:
+        delete_image(img.image_url)
+    delete_folder(account.account_code)
+    # Dọn toàn bộ liên hệ mua trỏ tới acc này.
+    db.query(AccountContact).filter(
+        AccountContact.account_id == account.id
+    ).delete(synchronize_session=False)
+    db.delete(account)
+
+
 @router.delete("/accounts/{account_id}", response_model=Message)
 def delete_account(account_id: int, db: Session = Depends(get_db)):
     account = db.get(Account, account_id)
     if not account:
         raise HTTPException(status_code=404, detail="Không tìm thấy acc")
-    # Xóa ảnh khỏi storage: từng ảnh (gồm ảnh cũ lưu ở gốc) + cả thư mục của acc.
-    for img in account.images:
-        delete_image(img.image_url)
-    delete_folder(account.account_code)
-    db.delete(account)
+    _delete_account(db, account)
     db.commit()
     return Message(detail="Đã xóa acc")

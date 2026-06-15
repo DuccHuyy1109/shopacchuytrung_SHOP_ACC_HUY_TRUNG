@@ -51,15 +51,24 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: isForm
-      ? (body as FormData)
-      : body !== undefined
-        ? JSON.stringify(body)
-        : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: isForm
+        ? (body as FormData)
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined,
+    });
+  } catch {
+    // fetch ném khi mất mạng / server đang khởi động lại / bị chặn.
+    throw new ApiError(
+      "Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.",
+      0,
+    );
+  }
 
   if (!res.ok) {
     let detail = "Đã có lỗi xảy ra, vui lòng thử lại";

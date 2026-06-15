@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import Lightbox from "../../components/Lightbox";
 import ModalPortal from "../../components/ModalPortal";
 import PhoneZaloLink from "../../components/PhoneZaloLink";
@@ -90,6 +93,8 @@ function DepositsView() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("pending");
   const [selected, setSelected] = useState<AdminDeposit | null>(null);
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -157,6 +162,14 @@ function DepositsView() {
         )}
       </div>
 
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} yêu cầu nạp đã chọn?`)) setBulk([...sel.selected]);
+        }}
+      />
+
       {loading ? (
         <div className="text-slate-500 py-8 text-center">Đang tải...</div>
       ) : data && data.items.length ? (
@@ -164,6 +177,14 @@ function DepositsView() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 text-left">
               <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={data.items.length > 0 && data.items.every((d) => sel.isSelected(d.id))}
+                    onChange={() => sel.toggleAll(data.items.map((d) => d.id))}
+                  />
+                </th>
                 <th className="p-3">Mã</th>
                 <th className="p-3">Người dùng</th>
                 <th className="p-3">Số tiền</th>
@@ -176,6 +197,14 @@ function DepositsView() {
             <tbody>
               {data.items.map((d) => (
                 <tr key={d.id} className="border-t border-slate-100">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-orange-500 align-middle"
+                      checked={sel.isSelected(d.id)}
+                      onChange={() => sel.toggle(d.id)}
+                    />
+                  </td>
                   <td className="p-3 font-medium">{d.deposit_code}</td>
                   <td className="p-3">
                     {d.full_name || d.username}
@@ -218,6 +247,19 @@ function DepositsView() {
 
       {data && <Pager page={page} pages={data.pages} onChange={setPage} />}
 
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="yêu cầu nạp"
+          deleteOne={(id) => api.del(`/api/admin/deposits/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
+
       {selected && (
         <DepositDetail
           deposit={selected}
@@ -238,6 +280,8 @@ function TransactionsView() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -305,6 +349,19 @@ function TransactionsView() {
         )}
       </div>
 
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (
+            confirm(
+              `Xóa ${sel.count} giao dịch đã chọn? Chỉ xóa lịch sử, KHÔNG đổi số dư người dùng.`,
+            )
+          )
+            setBulk([...sel.selected]);
+        }}
+      />
+
       {loading ? (
         <div className="text-slate-500 py-8 text-center">Đang tải...</div>
       ) : data && data.items.length ? (
@@ -312,6 +369,14 @@ function TransactionsView() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 text-left">
               <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={data.items.length > 0 && data.items.every((t) => sel.isSelected(t.id))}
+                    onChange={() => sel.toggleAll(data.items.map((t) => t.id))}
+                  />
+                </th>
                 <th className="p-3">Người dùng</th>
                 <th className="p-3">Loại</th>
                 <th className="p-3">Số tiền</th>
@@ -325,6 +390,14 @@ function TransactionsView() {
                 const credit = t.amount >= 0;
                 return (
                   <tr key={t.id} className="border-t border-slate-100">
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        className="size-4 accent-orange-500 align-middle"
+                        checked={sel.isSelected(t.id)}
+                        onChange={() => sel.toggle(t.id)}
+                      />
+                    </td>
                     <td className="p-3">
                       {t.full_name || t.username}
                       <div className="text-xs text-slate-400">
@@ -372,6 +445,19 @@ function TransactionsView() {
       )}
 
       {data && <Pager page={page} pages={data.pages} onChange={setPage} />}
+
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="giao dịch"
+          deleteOne={(id) => api.del(`/api/admin/transactions/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -77,4 +77,5 @@ class DashboardStats(BaseModel):
     revenue_this_month: float = 0
     orders_pending_confirm: int = 0
     timeseries: list[DashboardTimePoint] = []
-    top_accounts: list[DashboardTopAccount] = []
+    top_accounts: list[DashboardTopAccount] = []  # theo lượt liên hệ mua
+    top_viewed: list[DashboardTopAccount] = []  # theo lượt xem

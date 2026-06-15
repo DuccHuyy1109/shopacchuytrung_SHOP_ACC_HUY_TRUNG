@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AccountDetailModal from "../../components/AccountDetailModal";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import DescriptionTagsInput from "../../components/DescriptionTagsInput";
 import PhoneZaloLink from "../../components/PhoneZaloLink";
 import SelectField from "../../components/SelectField";
@@ -80,6 +83,8 @@ function AccountsListView() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [vipFilter, setVipFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -234,10 +239,9 @@ function AccountsListView() {
     }
   }
 
-  async function remove(id: number) {
-    if (!confirm("Xóa acc này?")) return;
-    await api.del(`/api/admin/accounts/${id}`);
-    load();
+  function remove(id: number) {
+    // Xóa 1 acc cũng đi qua bảng tiến trình cho nhất quán.
+    if (confirm("Xóa acc này? Ảnh của acc cũng bị xóa.")) setBulk([id]);
   }
 
   function setF<K extends keyof FormState>(k: K, v: FormState[K]) {
@@ -584,6 +588,15 @@ function AccountsListView() {
         )}
       </div>
 
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} acc đã chọn? Ảnh của acc cũng bị xóa.`))
+            setBulk([...sel.selected]);
+        }}
+      />
+
       {loading ? (
         <div className="text-slate-500 py-8 text-center">Đang tải...</div>
       ) : data && data.items.length ? (
@@ -591,6 +604,14 @@ function AccountsListView() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 text-left">
               <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={data.items.length > 0 && data.items.every((a) => sel.isSelected(a.id))}
+                    onChange={() => sel.toggleAll(data.items.map((a) => a.id))}
+                  />
+                </th>
                 <th className="p-3">Mã acc</th>
                 <th className="p-3">Loại</th>
                 <th className="p-3">Giá bán</th>
@@ -602,6 +623,14 @@ function AccountsListView() {
             <tbody>
               {data.items.map((a) => (
                 <tr key={a.id} className="border-t border-slate-100">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-orange-500 align-middle"
+                      checked={sel.isSelected(a.id)}
+                      onChange={() => sel.toggle(a.id)}
+                    />
+                  </td>
                   <td className="p-3 font-medium">{a.account_code}</td>
                   <td className="p-3">
                     {CATEGORY_LABELS[a.category_type] || a.category_type}
@@ -639,6 +668,19 @@ function AccountsListView() {
       )}
 
       {data && <Pager page={page} pages={data.pages} onChange={setPage} />}
+
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="acc"
+          deleteOne={(id) => api.del(`/api/admin/accounts/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -203,6 +203,17 @@ def list_post_contacts(
     )
 
 
+@router.delete("/post-contacts/{contact_id}", response_model=Message)
+def delete_post_contact(contact_id: int, db: Session = Depends(get_db)):
+    """Xóa một lượt liên hệ qua bài đăng."""
+    record = db.get(PostContact, contact_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Không tìm thấy liên hệ")
+    db.delete(record)
+    db.commit()
+    return Message(detail="Đã xóa liên hệ")
+
+
 # ==================== ACCOUNT CONTACTS (liên hệ mua acc) ====================
 @router.get("/account-contacts", response_model=Page[AccountContactAdminOut])
 def list_account_contacts(
@@ -276,3 +287,14 @@ def update_account_contact_status(
     db.commit()
     db.refresh(record)
     return record
+
+
+@router.delete("/account-contacts/{contact_id}", response_model=Message)
+def delete_account_contact(contact_id: int, db: Session = Depends(get_db)):
+    """Xóa một lượt liên hệ mua acc."""
+    record = db.get(AccountContact, contact_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Không tìm thấy liên hệ")
+    db.delete(record)
+    db.commit()
+    return Message(detail="Đã xóa liên hệ")

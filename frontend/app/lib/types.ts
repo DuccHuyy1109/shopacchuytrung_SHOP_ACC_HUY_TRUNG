@@ -273,4 +273,5 @@ export interface DashboardStats {
   orders_pending_confirm: number;
   timeseries: DashboardTimePoint[];
   top_accounts: DashboardTopAccount[];
+  top_viewed: DashboardTopAccount[];
 }

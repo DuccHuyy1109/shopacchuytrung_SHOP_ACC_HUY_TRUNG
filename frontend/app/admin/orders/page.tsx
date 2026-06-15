@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import Lightbox from "../../components/Lightbox";
 import ModalPortal from "../../components/ModalPortal";
 import PhoneZaloLink from "../../components/PhoneZaloLink";
@@ -39,6 +42,8 @@ export default function AdminOrdersPage() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const sel = useSelection<number>();
+  const [bulk, setBulk] = useState<number[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -107,6 +112,14 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} đơn order đã chọn?`)) setBulk([...sel.selected]);
+        }}
+      />
+
       {loading ? (
         <div className="text-slate-500 py-8 text-center">Đang tải...</div>
       ) : data && data.items.length ? (
@@ -114,6 +127,14 @@ export default function AdminOrdersPage() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 text-left">
               <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-orange-500 align-middle"
+                    checked={data.items.length > 0 && data.items.every((o) => sel.isSelected(o.id))}
+                    onChange={() => sel.toggleAll(data.items.map((o) => o.id))}
+                  />
+                </th>
                 <th className="p-3">Mã phiếu</th>
                 <th className="p-3">Khách</th>
                 <th className="p-3">SĐT</th>
@@ -126,6 +147,14 @@ export default function AdminOrdersPage() {
             <tbody>
               {data.items.map((o) => (
                 <tr key={o.id} className="border-t border-slate-100">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-orange-500 align-middle"
+                      checked={sel.isSelected(o.id)}
+                      onChange={() => sel.toggle(o.id)}
+                    />
+                  </td>
                   <td className="p-3 font-medium">{o.order_code}</td>
                   <td className="p-3">{o.customer_name}</td>
                   <td className="p-3">
@@ -159,6 +188,19 @@ export default function AdminOrdersPage() {
 
       {data && (
         <Pager page={page} pages={data.pages} onChange={setPage} />
+      )}
+
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="đơn order"
+          deleteOne={(id) => api.del(`/api/admin/orders/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
       )}
 
       {selected && (

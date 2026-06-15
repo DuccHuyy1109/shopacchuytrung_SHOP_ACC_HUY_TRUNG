@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import AnnouncementsManager from "../../components/AnnouncementsManager";
 import GuidesManager from "../../components/GuidesManager";
+import BulkBar from "../../components/admin/BulkBar";
+import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import { useSelection } from "../../components/admin/useSelection";
 import { api } from "../../lib/api";
 import { Pager } from "../orders/page";
 
@@ -231,6 +234,8 @@ function Crud({
   const [adding, setAdding] = useState(false);
   const [query, setQuery] = useState("");
   const [cpage, setCpage] = useState(1);
+  const sel = useSelection<string>();
+  const [bulk, setBulk] = useState<string[] | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -298,22 +303,37 @@ function Crud({
           }}
         />
       )}
+
+      <BulkBar
+        count={sel.count}
+        onClear={sel.clear}
+        onDelete={() => {
+          if (confirm(`Xóa ${sel.count} mục đã chọn?`)) setBulk([...sel.selected]);
+        }}
+      />
+
       {pageItems.map((it) => (
-        <ItemRow
-          key={String(it.id)}
-          item={it}
-          fields={fields}
-          summary={summary}
-          onSave={async (data) => {
-            const payload = onBeforeSave ? onBeforeSave(data) : data;
-            await api.put(`${base}/${it.id}`, payload);
-            load();
-          }}
-          onDelete={async () => {
-            await api.del(`${base}/${it.id}`);
-            load();
-          }}
-        />
+        <div key={String(it.id)} className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            className="size-4 accent-orange-500 mt-3.5 shrink-0"
+            checked={sel.isSelected(String(it.id))}
+            onChange={() => sel.toggle(String(it.id))}
+          />
+          <div className="flex-1 min-w-0">
+            <ItemRow
+              item={it}
+              fields={fields}
+              summary={summary}
+              onSave={async (data) => {
+                const payload = onBeforeSave ? onBeforeSave(data) : data;
+                await api.put(`${base}/${it.id}`, payload);
+                load();
+              }}
+              onDelete={() => setBulk([String(it.id)])}
+            />
+          </div>
+        </div>
       ))}
       {searchedItems.length === 0 && (
         <div className="text-slate-500 text-sm">
@@ -321,6 +341,19 @@ function Crud({
         </div>
       )}
       <Pager page={curPage} pages={totalPages} onChange={setCpage} />
+
+      {bulk && (
+        <DeleteProgressModal
+          ids={bulk}
+          label="mục"
+          deleteOne={(id) => api.del(`${base}/${id}`)}
+          onClose={() => {
+            setBulk(null);
+            sel.clear();
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -336,7 +369,7 @@ function ItemRow({
   fields: FieldDef[];
   summary: (i: Item) => string;
   onSave: (d: Item) => Promise<void>;
-  onDelete: () => Promise<void>;
+  onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
   if (!open)

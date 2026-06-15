@@ -16,6 +16,7 @@ from app.schemas.wallet import (
     WalletTransactionAdminOut,
 )
 from app.services import wallet as wallet_service
+from app.services.storage import delete_folder
 
 router = APIRouter(
     prefix="/api/admin",
@@ -121,6 +122,18 @@ def reject_deposit(
     return _to_admin_out(deposit)
 
 
+@router.delete("/deposits/{deposit_id}", response_model=Message)
+def delete_deposit(deposit_id: int, db: Session = Depends(get_db)):
+    """Xóa một yêu cầu nạp (kèm ảnh bill). KHÔNG hoàn/đổi số dư đã cộng."""
+    deposit = db.get(DepositRequest, deposit_id)
+    if not deposit:
+        raise HTTPException(status_code=404, detail="Không tìm thấy yêu cầu nạp")
+    delete_folder(f"deposits/{deposit.deposit_code}")
+    db.delete(deposit)
+    db.commit()
+    return Message(detail="Đã xóa yêu cầu nạp")
+
+
 @router.get("/purchases", response_model=Page[PurchaseAdminOut])
 def list_purchases(
     db: Session = Depends(get_db),
@@ -222,6 +235,20 @@ def list_transactions(
             out.full_name = t.user.full_name
         items.append(out)
     return Page.create(items, total, page, page_size)
+
+
+@router.delete("/transactions/{txn_id}", response_model=Message)
+def delete_transaction(txn_id: int, db: Session = Depends(get_db)):
+    """Xóa một dòng sổ giao dịch (chỉ xóa lịch sử, KHÔNG đổi số dư người dùng).
+
+    Lưu ý: xóa dòng ledger sẽ làm lệch đối soát balance_after — chỉ dùng để dọn.
+    """
+    txn = db.get(WalletTransaction, txn_id)
+    if not txn:
+        raise HTTPException(status_code=404, detail="Không tìm thấy giao dịch")
+    db.delete(txn)
+    db.commit()
+    return Message(detail="Đã xóa giao dịch")
 
 
 @router.post("/users/{user_id}/adjust-balance", response_model=Message)

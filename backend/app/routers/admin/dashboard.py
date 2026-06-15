@@ -78,6 +78,31 @@ def _top_accounts(db: Session, limit: int = 5) -> list[DashboardTopAccount]:
     return out
 
 
+def _top_viewed(db: Session, limit: int = 5) -> list[DashboardTopAccount]:
+    """Acc được nhấn xem nhiều nhất (theo view_count)."""
+    rows = (
+        db.query(Account)
+        .order_by(Account.view_count.desc())
+        .limit(limit)
+        .all()
+    )
+    contact_counts = dict(
+        db.query(AccountContact.account_id, func.count(AccountContact.id))
+        .group_by(AccountContact.account_id)
+        .all()
+    )
+    return [
+        DashboardTopAccount(
+            id=acc.id,
+            account_code=acc.account_code,
+            sale_price=float(acc.sale_price or 0),
+            contact_count=int(contact_counts.get(acc.id, 0)),
+            view_count=int(acc.view_count or 0),
+        )
+        for acc in rows
+    ]
+
+
 @router.get("/dashboard", response_model=DashboardStats)
 def dashboard_stats(db: Session = Depends(get_db)):
     """Thống kê tổng quan + nâng cao cho trang quản trị."""
@@ -118,4 +143,5 @@ def dashboard_stats(db: Session = Depends(get_db)):
         .count(),
         timeseries=_build_timeseries(db),
         top_accounts=_top_accounts(db),
+        top_viewed=_top_viewed(db),
     )
