@@ -100,13 +100,13 @@ function AccountsContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       {/* Thanh công cụ */}
-      <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
-        <div className="flex items-center gap-3">
-          <span className="grid place-items-center w-11 h-11 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire">
-            <TitleIcon className="w-6 h-6" />
+      <div className="flex items-center justify-between gap-2 sm:gap-3 mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="grid place-items-center w-10 h-10 sm:w-11 sm:h-11 shrink-0 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire">
+            <TitleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
           </span>
-          <div>
-            <h1 className="font-display font-extrabold uppercase tracking-wide text-2xl md:text-3xl text-white leading-none">
+          <div className="min-w-0">
+            <h1 className="font-display font-extrabold uppercase tracking-wide text-xl sm:text-2xl md:text-3xl text-white leading-none truncate">
               {title}
             </h1>
             {data && (
@@ -117,7 +117,7 @@ function AccountsContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Sắp xếp — chỉ chevron (xuống=đóng, lên=mở) */}
           <SortDropdown
             value={sort}

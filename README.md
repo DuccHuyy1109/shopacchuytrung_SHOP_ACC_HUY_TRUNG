@@ -3,6 +3,11 @@
 Website mua bán acc game **Free Fire** — có hệ thống người dùng & quản trị (admin),
 bảo mật bằng JWT, thông báo qua Telegram, thanh toán qua mã QR VietQR.
 
+
+git add .
+git commit -m "mô tả thay đổi"
+git push
+
 ## Công nghệ
 
 | Thành phần | Công nghệ |
