@@ -69,7 +69,7 @@ export default function TagTextInput({
         onFocus={() => setOpen(true)}
       />
       {open && filtered.length > 0 && (
-        <div className="absolute z-30 mt-1 w-full surface shadow-2xl py-1.5 text-sm max-h-[224px] overflow-auto">
+        <div className="absolute z-30 mt-1 w-full surface shadow-2xl py-1.5 text-sm max-h-[188px] overflow-auto">
           {filtered.map((s) => (
             <button
               key={s}
