@@ -241,6 +241,37 @@ export interface Page<T> {
   pages: number;
 }
 
+export interface WikiItem {
+  id: number;
+  name_vi: string;
+  icon: string | null;
+  category: number;
+  genre: number;
+  rare: number;
+  gender: number;
+  level: number | null;
+  tags: string | null;
+  sub_items: string | null;
+}
+
+export interface WikiItemDetail {
+  item: WikiItem;
+  pieces: WikiItem[];
+  bundles: WikiItem[];
+}
+
+export interface WikiFacet {
+  id: number;
+  label: string;
+  count: number;
+}
+
+export interface WikiMeta {
+  genres: WikiFacet[];
+  rares: WikiFacet[];
+  total: number;
+}
+
 export interface DashboardTimePoint {
   date: string;
   accounts: number;

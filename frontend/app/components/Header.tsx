@@ -23,6 +23,7 @@ import {
   ScrollText,
   Layers,
   Zap,
+  Sparkles,
 } from "./icons";
 
 export default function Header() {
@@ -45,11 +46,14 @@ export default function Header() {
     dinhGia: pathname.startsWith("/dinh-gia"),
     posts: pathname.startsWith("/posts"),
     guides: pathname.startsWith("/guides"),
+    wiki: pathname.startsWith("/wiki"),
   };
   const [categories, setCategories] = useState<PriceCategory[]>([]);
   const [siteName, setSiteName] = useState("Shop Acc Huy Trung");
   // Chức năng mua acc bằng ví (cấu hình site) — tắt thì ẩn mục "Acc của tôi".
   const [buyEnabled, setBuyEnabled] = useState(false);
+  // Chức năng Tra cứu (Wiki) — mặc định ẩn, admin bật/tắt qua cấu hình site.
+  const [wikiEnabled, setWikiEnabled] = useState(false);
   const [search, setSearch] = useState("");
   const [priceOpen, setPriceOpen] = useState(false);
   const [mobilePriceOpen, setMobilePriceOpen] = useState(false);
@@ -86,6 +90,7 @@ export default function Header() {
       .then((s) => {
         if (s.site_name) setSiteName(s.site_name);
         setBuyEnabled(s.buy_account_enabled === "1");
+        setWikiEnabled(s.wiki_enabled === "1");
       })
       .catch(() => {});
   }, []);
@@ -353,6 +358,12 @@ export default function Header() {
               <Crown className="w-4 h-4 text-violet-400" />
               Hướng dẫn
             </Link>
+            {wikiEnabled && (
+              <Link href="/wiki" className={navItemCls(active.wiki)} onClick={() => setMobileOpen(false)}>
+                <Sparkles className="w-4 h-4 text-gold-300" />
+                Tra cứu
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -492,6 +503,14 @@ export default function Header() {
             }} Icon={Crown} iconClass="text-violet-400">
               Hướng dẫn
             </MobileNavLink>
+            {wikiEnabled && (
+              <MobileNavLink href="/wiki" active={active.wiki} onClick={() => {
+                setMobileOpen(false);
+                setMobilePriceOpen(false);
+              }} Icon={Sparkles} iconClass="text-gold-300">
+                Tra cứu
+              </MobileNavLink>
+            )}
           </div>
         </aside>
       </div>

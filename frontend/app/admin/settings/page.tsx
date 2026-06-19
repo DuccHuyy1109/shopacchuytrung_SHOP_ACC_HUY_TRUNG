@@ -5,6 +5,7 @@ import AnnouncementsManager from "../../components/AnnouncementsManager";
 import GuidesManager from "../../components/GuidesManager";
 import BulkBar from "../../components/admin/BulkBar";
 import DeleteProgressModal from "../../components/admin/DeleteProgressModal";
+import WikiSyncPanel from "../../components/admin/WikiSyncPanel";
 import { useSelection } from "../../components/admin/useSelection";
 import { api } from "../../lib/api";
 import { Pager } from "../orders/page";
@@ -30,6 +31,7 @@ const TABS = [
   { k: "site", label: "Cấu hình site" },
   { k: "announcements", label: "Thông báo" },
   { k: "guides", label: "Hướng dẫn" },
+  { k: "wiki", label: "Wiki Trang Phục" },
 ] as const;
 
 export default function AdminSettingsPage() {
@@ -206,6 +208,7 @@ export default function AdminSettingsPage() {
       {tab === "guides" && <GuidesManager />}
       {tab === "announcements" && <AnnouncementsManager />}
       {tab === "site" && <SiteSettings />}
+      {tab === "wiki" && <WikiSyncPanel />}
     </div>
   );
 }

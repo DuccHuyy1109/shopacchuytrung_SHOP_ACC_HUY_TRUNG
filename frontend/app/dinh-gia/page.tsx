@@ -33,6 +33,7 @@ export default function ValuationPage() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // State cho Modal thêm súng
   const [isGunModalOpen, setIsGunModalOpen] = useState(false);
@@ -117,7 +118,9 @@ export default function ValuationPage() {
   const addTag = (tag: DescriptionTag) => {
     setSelectedTags([...selectedTags, tag]);
     setQuery("");
-    setOpen(false);
+    // Giữ bảng mở + giữ focus (không ẩn bàn phím) để chọn tiếp.
+    setOpen(true);
+    inputRef.current?.focus();
     // Reset kết quả khi thay đổi tag
     setValuatedPrice(null);
     setSuggestions([]);
@@ -209,6 +212,7 @@ export default function ValuationPage() {
                     </span>
                   ))}
                   <input
+                    ref={inputRef}
                     className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-zinc-200 placeholder:text-zinc-500"
                     placeholder={selectedTags.length ? "Thêm đặc điểm..." : "Gõ để tìm đặc điểm (vd: Acc cổ)..."}
                     value={query}
@@ -231,15 +235,17 @@ export default function ValuationPage() {
                 </div>
 
                 {open && (
-                  <div className="absolute z-[100] mt-1.5 w-full surface shadow-2xl py-1.5 text-sm max-h-60 overflow-auto animate-rise border border-fire-500/30">
+                  <div className="absolute z-[100] mt-1.5 w-full surface shadow-2xl py-1.5 text-sm max-h-[224px] overflow-auto animate-rise border border-fire-500/30">
                     {featureTags
                       .filter((t) => t.text.toLowerCase().includes(query.toLowerCase()))
                       .filter((t) => !selectedTags.some((s) => s.id === t.id))
-                      .slice(0, 5) // Limit suggestions to 5
+                      .slice(0, 10) // Hiện tối đa 10 (khung cao ~5 dòng, cuộn xem tiếp)
                       .map((tag) => (
                         <button
                           key={tag.id}
                           type="button"
+                          // preventDefault: giữ focus input -> không ẩn bàn phím mobile.
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => addTag(tag)}
                           className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-zinc-300 hover:bg-fire-500/10 hover:text-white transition font-medium"
                         >

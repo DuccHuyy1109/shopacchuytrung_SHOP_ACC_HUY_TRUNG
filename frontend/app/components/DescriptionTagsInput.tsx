@@ -50,6 +50,12 @@ export default function DescriptionTagsInput({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Chỉ cho sửa/xóa mẫu mô tả khi dùng ở ngữ cảnh admin.
+  const canManage = endpoint.includes("/admin/");
+  // Đang sửa mẫu mô tả nào (id) + nội dung đang sửa.
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
 
   const loadTags = () =>
     api
@@ -87,11 +93,52 @@ export default function DescriptionTagsInput({
     if (!t) return;
     commit([...selected, t]);
     setQuery("");
-    setOpen(false);
+    // Giữ bảng gợi ý mở + giữ focus (không ẩn bàn phím mobile) để gõ tiếp.
+    setOpen(true);
+    inputRef.current?.focus();
   }
 
   function removeChip(idx: number) {
     commit(selected.filter((_, i) => i !== idx));
+  }
+
+  // Xóa hẳn 1 mẫu mô tả khỏi danh sách (DB) — chỉ ở ngữ cảnh admin.
+  async function deleteTag(id: number) {
+    try {
+      await api.del(`/api/admin/description-tags/${id}`);
+      setTags((prev) => prev.filter((t) => t.id !== id));
+    } catch {
+      /* bỏ qua lỗi nhẹ */
+    }
+    inputRef.current?.focus();
+  }
+
+  function startEdit(tag: DescriptionTag) {
+    setEditingId(tag.id);
+    setEditText(tag.text);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditText("");
+    inputRef.current?.focus();
+  }
+
+  // Sửa nội dung mẫu mô tả rồi lưu lại vào danh sách (DB).
+  async function saveEdit() {
+    const id = editingId;
+    const text = editText.trim();
+    if (id == null || !text) return;
+    try {
+      await api.put(`/api/admin/description-tags/${id}`, { text });
+    } catch {
+      // Trùng tên hoặc lỗi -> giữ ô sửa để đổi tên khác.
+      return;
+    }
+    setTags((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+    setEditingId(null);
+    setEditText("");
+    inputRef.current?.focus();
   }
 
   // Lọc theo loại: tag_type=2 là súng nâng cấp, còn lại coi là đặc điểm chung.
@@ -106,7 +153,7 @@ export default function DescriptionTagsInput({
   const suggestions = visibleTags
     .filter((t) => t.text.toLowerCase().includes(q))
     .filter((t) => !selected.some((s) => s.toLowerCase() === t.text.toLowerCase()))
-    .slice(0, 8);
+    .slice(0, 10);
   const exactExists =
     visibleTags.some((t) => t.text.toLowerCase() === q) ||
     selected.some((s) => s.toLowerCase() === q);
@@ -173,6 +220,7 @@ export default function DescriptionTagsInput({
           </span>
         ))}
         <input
+          ref={inputRef}
           className={`min-w-[140px] flex-1 bg-transparent py-1 text-sm outline-none ${
             variant === "dark"
               ? "text-zinc-100 placeholder:text-zinc-600"
@@ -201,23 +249,121 @@ export default function DescriptionTagsInput({
               : "border-slate-200 bg-white"
           }`}
         >
-          {suggestions.map((s, idx) => (
-            <button
-              key={`description-suggestion-${s.id}-${idx}`}
-              type="button"
-              onClick={() => addChip(s.text)}
-              className={`block w-full px-3 py-2 text-left ${
-                variant === "dark"
-                  ? "hover:bg-fire-500/10 hover:text-white"
-                  : "hover:bg-orange-50"
-              }`}
-            >
-              {s.text}
-            </button>
-          ))}
+          {suggestions.map((s, idx) => {
+            const editing = editingId === s.id;
+            const iconBtn =
+              variant === "dark"
+                ? "text-zinc-500 hover:text-white"
+                : "text-slate-400 hover:text-slate-700";
+            return (
+              <div
+                key={`description-suggestion-${s.id}-${idx}`}
+                className={`flex items-center ${
+                  editing
+                    ? variant === "dark"
+                      ? "bg-fire-500/5"
+                      : "bg-orange-50/60"
+                    : variant === "dark"
+                      ? "hover:bg-fire-500/10"
+                      : "hover:bg-orange-50"
+                }`}
+              >
+                {editing ? (
+                  <>
+                    <input
+                      autoFocus
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          saveEdit();
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          cancelEdit();
+                        }
+                      }}
+                      className={`min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none ${
+                        variant === "dark"
+                          ? "text-zinc-100"
+                          : "text-zinc-900"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={saveEdit}
+                      title="Lưu"
+                      aria-label="Lưu"
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-base leading-none text-emerald-500 hover:bg-emerald-100/60 hover:text-emerald-600"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={cancelEdit}
+                      title="Hủy"
+                      aria-label="Hủy"
+                      className={`mr-1.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-base leading-none ${iconBtn}`}
+                    >
+                      ✕
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      // preventDefault: không để input mất focus -> giữ bàn phím mobile.
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => addChip(s.text)}
+                      className={`flex-1 px-3 py-2 text-left ${
+                        variant === "dark" ? "hover:text-white" : ""
+                      }`}
+                    >
+                      {s.text}
+                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => startEdit(s)}
+                          aria-label={`Sửa "${s.text}"`}
+                          title="Sửa"
+                          className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-sm leading-none ${
+                            variant === "dark"
+                              ? "text-zinc-500 hover:bg-fire-500/20 hover:text-fire-200"
+                              : "text-slate-400 hover:bg-orange-100 hover:text-orange-600"
+                          }`}
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => deleteTag(s.id)}
+                          aria-label={`Xóa "${s.text}" khỏi danh sách`}
+                          title="Xóa khỏi danh sách"
+                          className={`mr-1.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-base leading-none ${
+                            variant === "dark"
+                              ? "text-zinc-500 hover:bg-ember-500/20 hover:text-ember-300"
+                              : "text-slate-400 hover:bg-red-100 hover:text-red-600"
+                          }`}
+                        >
+                          ×
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
           {allowCreate && q && !exactExists && (
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={createAndAdd}
               disabled={saving}
               className={`flex w-full items-center gap-2 border-t px-3 py-2 text-left text-orange-600 disabled:opacity-50 ${

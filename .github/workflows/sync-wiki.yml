@@ -1,0 +1,26 @@
+name: Đồng bộ Wiki Trang Phục
+
+# Tự cập nhật trang phục mới vào Supabase. Nối thẳng DB, KHÔNG đụng Vercel
+# (tránh giới hạn timeout của serverless với ~10k item).
+on:
+  schedule:
+    - cron: "0 19 * * *" # 19:00 UTC ~ 02:00 giờ VN mỗi ngày
+  workflow_dispatch: {} # cho phép bấm "Run workflow" chạy tay
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cài dependency tối thiểu
+        run: pip install "sqlalchemy==2.0.36" "psycopg2-binary==2.9.10" "pydantic==2.10.4" "pydantic-settings==2.7.0"
+
+      - name: Chạy đồng bộ
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend/scripts/sync_wiki.py
