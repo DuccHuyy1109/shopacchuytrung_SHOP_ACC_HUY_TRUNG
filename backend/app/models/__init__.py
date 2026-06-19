@@ -17,6 +17,7 @@ from app.models.settings import (
 )
 from app.models.user import User
 from app.models.wallet import DepositRequest, WalletTransaction
+from app.models.wiki import WikiItem
 
 __all__ = [
     "User",
@@ -38,4 +39,5 @@ __all__ = [
     "SiteSetting",
     "Guide",
     "Announcement",
+    "WikiItem",
 ]

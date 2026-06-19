@@ -133,6 +133,13 @@ MSSQL_STATEMENTS = [
         "VALUES ('inactive_account_days', '7', "
         "N'Số ngày offline trước khi tài khoản bị tự xóa');",
     ),
+    (
+        "Thêm cấu hình wiki_enabled",
+        "IF NOT EXISTS (SELECT 1 FROM site_settings WHERE [key] = 'wiki_enabled') "
+        "INSERT INTO site_settings ([key], [value], [description]) "
+        "VALUES ('wiki_enabled', '0', "
+        "N'Hiện mục Tra cứu (Wiki) trên web (1 = bật, 0 = tắt)');",
+    ),
 ]
 
 POSTGRES_STATEMENTS = [
@@ -216,6 +223,36 @@ POSTGRES_STATEMENTS = [
         "INSERT INTO site_settings (key, value, description) "
         "SELECT 'inactive_account_days', '7', 'Số ngày offline trước khi tài khoản bị tự xóa' "
         "WHERE NOT EXISTS (SELECT 1 FROM site_settings WHERE key = 'inactive_account_days');",
+    ),
+    (
+        "Thêm cột wiki_items.sub_items (xem theo bộ)",
+        "ALTER TABLE wiki_items ADD COLUMN IF NOT EXISTS sub_items VARCHAR(500) NULL;",
+    ),
+    (
+        "Gọn wiki_items: bỏ cột name_en",
+        'ALTER TABLE wiki_items DROP COLUMN IF EXISTS name_en;',
+    ),
+    (
+        "Gọn wiki_items: bỏ cột like",
+        'ALTER TABLE wiki_items DROP COLUMN IF EXISTS "like";',
+    ),
+    (
+        "Gọn wiki_items: bỏ cột dislike",
+        "ALTER TABLE wiki_items DROP COLUMN IF EXISTS dislike;",
+    ),
+    (
+        "Gọn wiki_items: bỏ cột rank",
+        'ALTER TABLE wiki_items DROP COLUMN IF EXISTS "rank";',
+    ),
+    (
+        "Thêm cột wiki_items.level (cấp súng)",
+        "ALTER TABLE wiki_items ADD COLUMN IF NOT EXISTS level INTEGER NULL;",
+    ),
+    (
+        "Thêm cấu hình wiki_enabled",
+        "INSERT INTO site_settings (key, value, description) "
+        "SELECT 'wiki_enabled', '0', 'Hiện mục Tra cứu (Wiki) trên web (1 = bật, 0 = tắt)' "
+        "WHERE NOT EXISTS (SELECT 1 FROM site_settings WHERE key = 'wiki_enabled');",
     ),
 ]
 

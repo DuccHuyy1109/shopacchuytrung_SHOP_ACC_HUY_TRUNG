@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import auth, catalog, orders, posts, public, uploads, wallet
+from app.routers import auth, catalog, orders, posts, public, uploads, wallet, wiki
 from app.routers.admin import admin_router
 
 logging.basicConfig(level=logging.INFO)
@@ -46,6 +46,7 @@ app.include_router(posts.router)
 app.include_router(public.router)
 app.include_router(uploads.router)
 app.include_router(wallet.router)
+app.include_router(wiki.router)
 app.include_router(admin_router)
 
 
