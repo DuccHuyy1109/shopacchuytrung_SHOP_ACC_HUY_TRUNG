@@ -21,6 +21,7 @@ export default function TagTextInput({
 }) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -41,7 +42,7 @@ export default function TagTextInput({
   const filtered = suggestions
     .filter((s) => s.toLowerCase().includes(segment))
     .filter((s) => !completed.includes(s.toLowerCase()))
-    .slice(0, 5);
+    .slice(0, 10);
 
   function pick(s: string) {
     const before = parts
@@ -49,12 +50,15 @@ export default function TagTextInput({
       .map((p) => p.trim())
       .filter(Boolean);
     onChange([...before, s].join(", ") + ", ");
+    // Giữ bảng mở + giữ focus (không ẩn bàn phím mobile) để chọn tiếp.
     setOpen(true);
+    inputRef.current?.focus();
   }
 
   return (
     <div ref={boxRef} className="relative">
       <input
+        ref={inputRef}
         className="field"
         value={value}
         placeholder={placeholder}
@@ -65,11 +69,13 @@ export default function TagTextInput({
         onFocus={() => setOpen(true)}
       />
       {open && filtered.length > 0 && (
-        <div className="absolute z-30 mt-1 w-full surface shadow-2xl py-1.5 text-sm max-h-60 overflow-auto">
+        <div className="absolute z-30 mt-1 w-full surface shadow-2xl py-1.5 text-sm max-h-[224px] overflow-auto">
           {filtered.map((s) => (
             <button
               key={s}
               type="button"
+              // preventDefault: giữ focus input -> không ẩn bàn phím mobile.
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => pick(s)}
               className="block w-full text-left px-3 py-2 text-zinc-300 hover:bg-fire-500/10 hover:text-white transition"
             >
