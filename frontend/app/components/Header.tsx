@@ -65,6 +65,25 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const priceRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+  // Dropdown "Acc theo giá" đặt NGOÀI thanh nav cuộn ngang (tránh bị cắt).
+  const navRef = useRef<HTMLElement>(null);
+  const priceMenuRef = useRef<HTMLDivElement>(null);
+  const [pricePos, setPricePos] = useState<{ left: number } | null>(null);
+
+  // Mở/đóng dropdown giá — tính vị trí theo nút (do nút nằm trong vùng cuộn).
+  function togglePrice() {
+    if (priceOpen) {
+      setPriceOpen(false);
+      return;
+    }
+    const navR = navRef.current?.getBoundingClientRect();
+    const btnR = priceRef.current?.getBoundingClientRect();
+    if (navR && btnR) {
+      const left = Math.max(8, Math.min(btnR.left - navR.left, navR.width - 232));
+      setPricePos({ left });
+    }
+    setPriceOpen(true);
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -97,13 +116,24 @@ export default function Header() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (priceRef.current && !priceRef.current.contains(e.target as Node))
+      const t = e.target as Node;
+      if (
+        priceRef.current &&
+        !priceRef.current.contains(t) &&
+        (!priceMenuRef.current || !priceMenuRef.current.contains(t))
+      )
         setPriceOpen(false);
-      if (userRef.current && !userRef.current.contains(e.target as Node))
-        setUserOpen(false);
+      if (userRef.current && !userRef.current.contains(t)) setUserOpen(false);
+    }
+    function onResize() {
+      setPriceOpen(false);
     }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   function submitSearch(e: React.FormEvent) {
@@ -237,7 +267,7 @@ export default function Header() {
       {/* Top bar */}
       <div className="relative z-20 bg-ink-950/95 backdrop-blur-md border-b border-ink-800">
         <div className="mx-auto max-w-7xl px-4 py-4 md:py-5">
-          <div className="relative flex items-center gap-3">
+          <div className="flex items-center gap-3">
             {/* Logo — không khung, phát sáng rìa + điện giật */}
             <Link href="/" className="flex items-center gap-3 shrink-0 group">
               <span className="relative inline-block">
@@ -262,15 +292,15 @@ export default function Header() {
               </span>
             </Link>
 
-            {/* Search — căn giữa header (desktop) */}
-            <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg px-2">
-              {searchBox}
+            {/* Search — co giãn theo bề rộng màn hình (desktop) */}
+            <div className="hidden md:block min-w-0 flex-1 px-2">
+              <div className="mx-auto max-w-lg">{searchBox}</div>
             </div>
 
-            {/* Mobile menu + Auth */}
-            <div className="ml-auto flex items-center gap-2">
+            {/* Hamburger (luôn hiện) + Auth */}
+            <div className="ml-auto flex items-center gap-2 shrink-0">
               <button
-                className="md:hidden grid h-11 w-11 place-items-center rounded-lg border border-white/25 bg-ink-900/60 text-zinc-200 shadow-[0_0_18px_-12px_rgba(255,255,255,0.9)] transition hover:border-fire-500/60 hover:text-white"
+                className="grid h-11 w-11 place-items-center rounded-lg border border-white/25 bg-ink-900/60 text-zinc-200 shadow-[0_0_18px_-12px_rgba(255,255,255,0.9)] transition hover:border-fire-500/60 hover:text-white"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Mở danh mục"
               >
@@ -286,10 +316,12 @@ export default function Header() {
       </div>
 
       {/* Nav bar */}
-      <nav className="relative z-10 hidden bg-ink-900/90 backdrop-blur-md border-b border-ink-800 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] md:block">
-        <div className="mx-auto max-w-7xl px-4 flex items-center">
+      <nav ref={navRef} className="relative z-10 hidden bg-ink-900/90 backdrop-blur-md border-b border-ink-800 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] md:block">
+        <div className="mx-auto max-w-7xl px-2 sm:px-4">
+          {/* Cuộn ngang để xem hết danh mục khi màn hình hẹp */}
           <div
-            className="flex flex-1 justify-between items-center w-auto py-0 gap-1"
+            className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            onScroll={() => setPriceOpen(false)}
           >
             <Link href="/" className={navItemCls(active.home)} onClick={() => setMobileOpen(false)}>
               <Flame className="w-4 h-4 text-fire-400" />
@@ -304,42 +336,13 @@ export default function Header() {
               Acc siêu phẩm
             </Link>
 
-            {/* Acc theo giá dropdown */}
-            <div className="relative" ref={priceRef}>
-              <button onClick={() => setPriceOpen((v) => !v)} className={`${navItemCls(active.theoGia)} w-full md:w-auto`}>
+            {/* Acc theo giá — nút (dropdown đặt ngoài vùng cuộn để không bị cắt) */}
+            <div ref={priceRef} className="shrink-0">
+              <button onClick={togglePrice} className={navItemCls(active.theoGia)}>
                 <Tag className="w-4 h-4 text-fire-400" />
                 Acc theo giá
                 <ChevronDown className={`w-3.5 h-3.5 transition ${priceOpen ? "rotate-180" : ""}`} />
               </button>
-              {priceOpen && (
-                <div className="absolute left-0 mt-1 w-56 surface shadow-2xl py-1.5 text-sm z-50 animate-rise">
-                  <Link
-                    href="/accounts"
-                    className="flex items-center gap-2.5 px-4 py-2.5 font-semibold text-zinc-100 hover:bg-fire-500/10 transition"
-                    onClick={() => {
-                      setPriceOpen(false);
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <Layers className="w-4 h-4 text-fire-400" />
-                    Tất cả mức giá
-                  </Link>
-                  {categories.map((c, idx) => (
-                    <Link
-                      key={`header-category-${c.id}-${idx}`}
-                      href={`/accounts?category=${c.id}`}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-zinc-300 hover:bg-fire-500/10 hover:text-white transition"
-                      onClick={() => {
-                        setPriceOpen(false);
-                        setMobileOpen(false);
-                      }}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-fire-500" />
-                      {c.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
             </div>
 
             <Link href="/order" className={navItemCls(active.order)} onClick={() => setMobileOpen(false)}>
@@ -366,6 +369,41 @@ export default function Header() {
             )}
           </div>
         </div>
+
+        {/* Dropdown "Acc theo giá" — đặt ngoài vùng cuộn ngang để không bị cắt */}
+        {priceOpen && (
+          <div
+            ref={priceMenuRef}
+            style={{ left: pricePos?.left ?? 16 }}
+            className="absolute top-full mt-1 w-56 surface shadow-2xl py-1.5 text-sm z-50 animate-rise"
+          >
+            <Link
+              href="/accounts"
+              className="flex items-center gap-2.5 px-4 py-2.5 font-semibold text-zinc-100 hover:bg-fire-500/10 transition"
+              onClick={() => {
+                setPriceOpen(false);
+                setMobileOpen(false);
+              }}
+            >
+              <Layers className="w-4 h-4 text-fire-400" />
+              Tất cả mức giá
+            </Link>
+            {categories.map((c, idx) => (
+              <Link
+                key={`header-category-${c.id}-${idx}`}
+                href={`/accounts?category=${c.id}`}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-zinc-300 hover:bg-fire-500/10 hover:text-white transition"
+                onClick={() => {
+                  setPriceOpen(false);
+                  setMobileOpen(false);
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-fire-500" />
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
 
       <div
@@ -519,7 +557,7 @@ export default function Header() {
 }
 
 function navItemCls(isActive: boolean) {
-  return `group flex items-center gap-2 px-3.5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${
+  return `group flex shrink-0 items-center gap-2 px-3.5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${
     isActive
       ? "text-white border-fire-500 bg-fire-500/10 [text-shadow:0_0_14px_rgba(255,106,0,0.55)]"
       : "text-zinc-300 border-transparent hover:text-white hover:border-fire-500 hover:bg-white/[0.03]"
