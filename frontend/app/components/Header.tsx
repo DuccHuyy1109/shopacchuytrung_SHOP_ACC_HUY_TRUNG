@@ -69,9 +69,6 @@ export default function Header() {
   const navRef = useRef<HTMLElement>(null);
   const priceMenuRef = useRef<HTMLDivElement>(null);
   const [pricePos, setPricePos] = useState<{ left: number } | null>(null);
-  // Kéo-thả chuột để cuộn thanh danh mục ngang (desktop).
-  const navScrollRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({ down: false, startX: 0, startLeft: 0, moved: false });
 
   // Mở/đóng dropdown giá — tính vị trí theo nút (do nút nằm trong vùng cuộn).
   function togglePrice() {
@@ -86,35 +83,6 @@ export default function Header() {
       setPricePos({ left });
     }
     setPriceOpen(true);
-  }
-
-  // Kéo chuột để cuộn thanh danh mục (touch dùng cuộn tự nhiên).
-  function onNavPointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.pointerType !== "mouse") return;
-    const el = navScrollRef.current;
-    if (!el) return;
-    dragRef.current = { down: true, startX: e.clientX, startLeft: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
-  }
-  function onNavPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    const d = dragRef.current;
-    const el = navScrollRef.current;
-    if (!d.down || !el) return;
-    const dx = e.clientX - d.startX;
-    if (Math.abs(dx) > 4) d.moved = true;
-    el.scrollLeft = d.startLeft - dx;
-  }
-  function onNavPointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    dragRef.current.down = false;
-    navScrollRef.current?.releasePointerCapture?.(e.pointerId);
-  }
-  // Nếu vừa kéo (di chuyển) thì chặn click điều hướng/đóng-mở dropdown.
-  function onNavClickCapture(e: React.MouseEvent) {
-    if (dragRef.current.moved) {
-      e.preventDefault();
-      e.stopPropagation();
-      dragRef.current.moved = false;
-    }
   }
 
   useEffect(() => {
@@ -350,15 +318,10 @@ export default function Header() {
       {/* Nav bar */}
       <nav ref={navRef} className="relative z-10 hidden bg-ink-900/90 backdrop-blur-md border-b border-ink-800 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] md:block">
         <div className="mx-auto max-w-7xl px-2 sm:px-4">
-          {/* Cuộn ngang (vuốt hoặc kéo chuột) để xem hết danh mục khi màn hình hẹp */}
+          {/* Cuộn ngang (vuốt/touchpad) để xem hết danh mục khi màn hình hẹp */}
           <div
-            ref={navScrollRef}
-            className="flex items-center gap-1 overflow-x-auto cursor-grab select-none active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             onScroll={() => setPriceOpen(false)}
-            onPointerDown={onNavPointerDown}
-            onPointerMove={onNavPointerMove}
-            onPointerUp={onNavPointerUp}
-            onClickCapture={onNavClickCapture}
           >
             <Link href="/" className={navItemCls(active.home)} onClick={() => setMobileOpen(false)}>
               <Flame className="w-4 h-4 text-fire-400" />

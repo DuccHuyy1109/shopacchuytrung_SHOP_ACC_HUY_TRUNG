@@ -3,10 +3,12 @@
 
 Chạy:  cd backend && python scripts/import_wiki_tags.py
 
-  - Idempotent: thêm tên mới (bỏ qua trùng, cột text UNIQUE) VÀ xóa các tag đã
-    auto-import thuộc thể loại bị loại (Nền, Ảnh đại diện) — chạy lại để đồng bộ.
+  Quy tắc làm sạch (idempotent, chạy lại để đồng bộ):
+  - GIỮ: bộ đồ (bundle) + các món lẻ KHÔNG thuộc bộ nào (áo/quần... đứng riêng).
+  - LOẠI: các món là THÀNH PHẦN bên trong 1 bộ đồ (tránh trùng), và thể loại
+    Nền + Ảnh đại diện.
   - KHÔNG đụng tag do người tạo tay (chỉ xóa tag tự nhập: gia_tien=0, tag_type=1).
-  - Đảo lại được: xóa các tag value=0 trùng tên wiki.
+  - Tên vừa là thành phần vừa là món lẻ riêng -> vẫn GIỮ (an toàn).
 """
 
 import os
@@ -29,32 +31,42 @@ MAX_LEN = 150  # độ dài cột description_tags.text
 EXCLUDE_GENRES = [56, 57]
 
 
-def _norm_names(query) -> set[str]:
-    out: set[str] = set()
-    for (n,) in query:
-        t = (n or "").strip()[:MAX_LEN]
-        if t:
-            out.add(t)
-    return out
-
-
 def main() -> None:
     with SessionLocal() as session:
-        keep = _norm_names(
-            session.query(WikiItem.name_vi)
-            .filter(WikiItem.genre.notin_(EXCLUDE_GENRES))
-            .distinct()
-        )
-        excluded = _norm_names(
-            session.query(WikiItem.name_vi)
-            .filter(WikiItem.genre.in_(EXCLUDE_GENRES))
-            .distinct()
-        )
+        # id các món là THÀNH PHẦN của 1 bộ đồ (nằm trong sub_items của bộ nào đó).
+        component_ids: set[int] = set()
+        for (sub,) in (
+            session.query(WikiItem.sub_items)
+            .filter(WikiItem.sub_items.isnot(None))
+            .all()
+        ):
+            for part in (sub or "").strip(",").split(","):
+                if part.strip().isdigit():
+                    component_ids.add(int(part))
 
-    # Tên chỉ thuộc thể loại bị loại (không trùng tên ở thể loại khác) -> xóa.
+        items = session.query(
+            WikiItem.id, WikiItem.name_vi, WikiItem.genre
+        ).all()
+
+    keep: set[str] = set()
+    excluded: set[str] = set()
+    for iid, name, genre in items:
+        t = (name or "").strip()[:MAX_LEN]
+        if not t:
+            continue
+        # Loại nếu: Nền/Ảnh đại diện HOẶC là thành phần trong 1 bộ đồ.
+        if genre in EXCLUDE_GENRES or iid in component_ids:
+            excluded.add(t)
+        else:
+            keep.add(t)
+
+    # Tên CHỈ bị loại (không đồng thời là 1 món giữ lại) -> xóa khỏi danh sách.
     to_delete = excluded - keep
     rows = [{"text": t, "gia_tien": 0, "tag_type": 1, "sort_order": 0} for t in keep]
-    print(f"Tên giữ lại: {len(rows)} | Tên cần loại (Nền/Ảnh đại diện): {len(to_delete)}", flush=True)
+    print(
+        f"Giữ lại: {len(rows)} | Loại (thành phần bộ + Nền/Ảnh đại diện): {len(to_delete)}",
+        flush=True,
+    )
 
     # ---- Thêm mới (idempotent) ----
     added = 0
@@ -92,7 +104,7 @@ def main() -> None:
                 )
             session.commit()
 
-    print(f"Đã thêm mới: {added} | Đã xóa (Nền/Ảnh đại diện): {deleted}", flush=True)
+    print(f"Đã thêm mới: {added} | Đã xóa (thành phần bộ + Nền/Ảnh đại diện): {deleted}", flush=True)
 
 
 if __name__ == "__main__":
