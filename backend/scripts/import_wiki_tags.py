@@ -4,9 +4,9 @@
 Chạy:  cd backend && python scripts/import_wiki_tags.py
 
   Quy tắc làm sạch (idempotent, chạy lại để đồng bộ):
-  - GIỮ: bộ đồ (bundle) + các món lẻ KHÔNG thuộc bộ nào (áo/quần... đứng riêng) + Nền.
-  - LOẠI: các món là THÀNH PHẦN bên trong 1 bộ đồ (tránh trùng), và thể loại
-    Ảnh đại diện.
+  - GIỮ: bộ đồ (bundle) + các món lẻ KHÔNG thuộc bộ nào (áo/quần... đứng riêng)
+    + Nền + Ảnh đại diện.
+  - LOẠI: các món là THÀNH PHẦN bên trong 1 bộ đồ (tránh trùng).
   - KHÔNG đụng tag do người tạo tay (chỉ xóa tag tự nhập: gia_tien=0, tag_type=1).
   - Tên vừa là thành phần vừa là món lẻ riêng -> vẫn GIỮ (an toàn).
 """
@@ -27,8 +27,9 @@ from app.database import SessionLocal, engine
 from app.models import DescriptionTag, WikiItem
 
 MAX_LEN = 150  # độ dài cột description_tags.text
-# Thể loại KHÔNG đưa vào mô tả acc: 56 = Ảnh đại diện. (Nền=57 thì GIỮ.)
-EXCLUDE_GENRES = [56]
+# Không loại theo thể loại nữa (GIỮ cả Nền 57 + Ảnh đại diện 56). Chỉ loại
+# các món là thành phần trong 1 bộ đồ.
+EXCLUDE_GENRES: list[int] = []
 
 
 def main() -> None:
@@ -54,7 +55,7 @@ def main() -> None:
         t = (name or "").strip()[:MAX_LEN]
         if not t:
             continue
-        # Loại nếu: Ảnh đại diện HOẶC là thành phần trong 1 bộ đồ.
+        # Loại nếu: là thành phần trong 1 bộ đồ (hoặc thể loại trong EXCLUDE_GENRES).
         if genre in EXCLUDE_GENRES or iid in component_ids:
             excluded.add(t)
         else:
@@ -64,7 +65,7 @@ def main() -> None:
     to_delete = excluded - keep
     rows = [{"text": t, "gia_tien": 0, "tag_type": 1, "sort_order": 0} for t in keep]
     print(
-        f"Giữ lại: {len(rows)} | Loại (thành phần bộ + Ảnh đại diện): {len(to_delete)}",
+        f"Giữ lại: {len(rows)} | Loại (thành phần trong bộ): {len(to_delete)}",
         flush=True,
     )
 
@@ -104,7 +105,7 @@ def main() -> None:
                 )
             session.commit()
 
-    print(f"Đã thêm mới: {added} | Đã xóa (thành phần bộ + Ảnh đại diện): {deleted}", flush=True)
+    print(f"Đã thêm mới: {added} | Đã xóa (thành phần trong bộ): {deleted}", flush=True)
 
 
 if __name__ == "__main__":

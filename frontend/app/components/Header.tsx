@@ -320,7 +320,7 @@ export default function Header() {
         <div className="mx-auto max-w-7xl px-2 sm:px-4">
           {/* Cuộn ngang (vuốt/touchpad) để xem hết danh mục khi màn hình hẹp */}
           <div
-            className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex items-center justify-between gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             onScroll={() => setPriceOpen(false)}
           >
             <Link href="/" className={navItemCls(active.home)} onClick={() => setMobileOpen(false)}>
