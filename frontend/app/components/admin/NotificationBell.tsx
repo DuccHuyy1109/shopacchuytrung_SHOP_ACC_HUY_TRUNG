@@ -151,13 +151,40 @@ export default function NotificationBell({ username }: { username: string }) {
     [load],
   );
 
+  // Đọc LẺ 1 thông báo: chỉ tắt chấm xanh của đúng mục đó.
+  const markRead = useCallback((item: Row) => {
+    if (!item.is_new) return;
+    setSummary((prev) =>
+      prev
+        ? {
+            ...prev,
+            total_unread: Math.max(0, prev.total_unread - 1),
+            categories: prev.categories.map((c) =>
+              c.key === item.cat
+                ? {
+                    ...c,
+                    unread: Math.max(0, c.unread - 1),
+                    items: c.items.map((it) =>
+                      it.id === item.id ? { ...it, is_new: false } : it,
+                    ),
+                  }
+                : c,
+            ),
+          }
+        : prev,
+    );
+    api
+      .post("/api/admin/notifications/read", { category: item.cat, id: item.id })
+      .catch(() => {});
+  }, []);
+
   const goto = useCallback(
     (item: Row) => {
+      markRead(item);
       setOpen(false);
-      markSeen(item.cat);
       router.push(HREF[item.cat] ?? "/admin");
     },
-    [markSeen, router],
+    [markRead, router],
   );
 
   const removeItem = useCallback(

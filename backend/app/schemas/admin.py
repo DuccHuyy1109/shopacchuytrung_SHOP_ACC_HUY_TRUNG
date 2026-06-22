@@ -77,6 +77,14 @@ class NotificationSeenIn(BaseModel):
     )
 
 
+class NotificationReadIn(BaseModel):
+    # Đánh dấu đã đọc MỘT thông báo cụ thể.
+    category: str = Field(
+        pattern="^(orders|account_contacts|posts|post_contacts)$"
+    )
+    id: int
+
+
 class DashboardTimePoint(BaseModel):
     date: str  # YYYY-MM-DD
     accounts: int

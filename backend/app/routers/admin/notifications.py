@@ -6,11 +6,17 @@ Gom 4 nguồn cần admin để mắt tới:
   • posts             — Bài đăng mới của người dùng
   • post_contacts     — Liên hệ qua bài đăng
 
-"Mới/chưa đọc" được xác định bằng cách so id của bản ghi với mốc id đã xem
-gần nhất (lưu trong site_settings). Dùng id auto-increment thay vì thời gian
-để tránh hoàn toàn rắc rối múi giờ giữa các loại CSDL (SQLite/SQL Server/PG).
-Đánh dấu đã đọc = nâng mốc id lên id lớn nhất hiện có của mục đó.
+Trạng thái "mới/đã đọc" lưu trong site_settings, KHÔNG cần migrate DB:
+  • notif_seen_<cat>  — mốc id (watermark): mọi bản ghi id <= mốc coi như cũ.
+  • notif_read_<cat>  — danh sách id ĐÃ ĐỌC LẺ nằm trên watermark (JSON).
+
+Một thông báo là "mới" khi: id > watermark VÀ id chưa nằm trong danh sách đọc lẻ.
+Nhờ vậy bấm vào 1 mục chỉ tắt chấm xanh của đúng mục đó; "đọc tất cả" thì nâng
+watermark lên max id và xoá danh sách đọc lẻ. Dùng id auto-increment để tránh
+hoàn toàn rắc rối múi giờ giữa các loại CSDL.
 """
+
+import json
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
@@ -28,6 +34,7 @@ from app.models import (
 from app.schemas.admin import (
     NotificationCategory,
     NotificationItem,
+    NotificationReadIn,
     NotificationSeenIn,
     NotificationSummary,
 )
@@ -41,6 +48,8 @@ router = APIRouter(
 
 # Số dòng tối đa hiển thị mỗi mục trong bảng thông báo.
 PER_CATEGORY_LIMIT = 12
+# Giới hạn kích thước danh sách "đọc lẻ" để không phình vô hạn.
+READ_LIST_CAP = 500
 
 CATEGORY_LABELS = {
     "orders": "Đơn order acc",
@@ -61,6 +70,10 @@ def _seen_key(category: str) -> str:
     return f"notif_seen_{category}"
 
 
+def _read_key(category: str) -> str:
+    return f"notif_read_{category}"
+
+
 def _get_seen_id(db: Session, category: str) -> int:
     s = db.get(SiteSetting, _seen_key(category))
     if s and s.value and str(s.value).isdigit():
@@ -73,15 +86,50 @@ def _set_seen_id(db: Session, category: str, value: int) -> None:
     s = db.get(SiteSetting, key)
     if not s:
         s = SiteSetting(
-            key=key,
-            description=f"ID thông báo '{category}' admin đã xem gần nhất",
+            key=key, description=f"Mốc id thông báo '{category}' đã xem"
         )
         db.add(s)
     s.value = str(value)
 
 
+def _get_read_ids(db: Session, category: str, watermark: int = 0) -> set[int]:
+    """Tập id đã đọc lẻ (đã loại bỏ những id <= watermark cho gọn)."""
+    s = db.get(SiteSetting, _read_key(category))
+    if not s or not s.value:
+        return set()
+    try:
+        ids = json.loads(s.value)
+        return {int(i) for i in ids if int(i) > watermark}
+    except (ValueError, TypeError):
+        return set()
+
+
+def _set_read_ids(db: Session, category: str, ids: set[int]) -> None:
+    key = _read_key(category)
+    s = db.get(SiteSetting, key)
+    if not s:
+        s = SiteSetting(
+            key=key, description=f"Id thông báo '{category}' đã đọc lẻ"
+        )
+        db.add(s)
+    # Giữ tối đa READ_LIST_CAP id lớn nhất.
+    trimmed = sorted(ids, reverse=True)[:READ_LIST_CAP]
+    s.value = json.dumps(trimmed)
+
+
 def _max_id(db: Session, model) -> int:
     return int(db.query(func.coalesce(func.max(model.id), 0)).scalar() or 0)
+
+
+def _unread_count(db: Session, model, watermark: int, read_ids: set[int]) -> int:
+    q = db.query(func.count(model.id)).filter(model.id > watermark)
+    if read_ids:
+        q = q.filter(~model.id.in_(read_ids))
+    return int(q.scalar() or 0)
+
+
+def _is_new(item_id: int, watermark: int, read_ids: set[int]) -> bool:
+    return item_id > watermark and item_id not in read_ids
 
 
 def _fmt_price(value) -> str | None:
@@ -109,10 +157,8 @@ def _who(user) -> str | None:
 
 # ----------------------------- Build từng mục ----------------------------- #
 def _orders_category(db: Session) -> NotificationCategory:
-    seen = _get_seen_id(db, "orders")
-    unread = (
-        db.query(func.count(Order.id)).filter(Order.id > seen).scalar() or 0
-    )
+    wm = _get_seen_id(db, "orders")
+    read = _get_read_ids(db, "orders", wm)
     rows = db.query(Order).order_by(Order.id.desc()).limit(PER_CATEGORY_LIMIT).all()
     items = [
         NotificationItem(
@@ -124,23 +170,21 @@ def _orders_category(db: Session) -> NotificationCategory:
             or None,
             meta=_fmt_price(o.desired_price or o.amount),
             created_at=o.created_at,
-            is_new=o.id > seen,
+            is_new=_is_new(o.id, wm, read),
         )
         for o in rows
     ]
     return NotificationCategory(
-        key="orders", label=CATEGORY_LABELS["orders"], unread=int(unread), items=items
+        key="orders",
+        label=CATEGORY_LABELS["orders"],
+        unread=_unread_count(db, Order, wm, read),
+        items=items,
     )
 
 
 def _account_contacts_category(db: Session) -> NotificationCategory:
-    seen = _get_seen_id(db, "account_contacts")
-    unread = (
-        db.query(func.count(AccountContact.id))
-        .filter(AccountContact.id > seen)
-        .scalar()
-        or 0
-    )
+    wm = _get_seen_id(db, "account_contacts")
+    read = _get_read_ids(db, "account_contacts", wm)
     rows = (
         db.query(AccountContact)
         .options(
@@ -166,22 +210,20 @@ def _account_contacts_category(db: Session) -> NotificationCategory:
                 subtitle=contact,
                 meta=_fmt_price(c.account.sale_price) if c.account else None,
                 created_at=c.created_at,
-                is_new=c.id > seen,
+                is_new=_is_new(c.id, wm, read),
             )
         )
     return NotificationCategory(
         key="account_contacts",
         label=CATEGORY_LABELS["account_contacts"],
-        unread=int(unread),
+        unread=_unread_count(db, AccountContact, wm, read),
         items=items,
     )
 
 
 def _posts_category(db: Session) -> NotificationCategory:
-    seen = _get_seen_id(db, "posts")
-    unread = (
-        db.query(func.count(Post.id)).filter(Post.id > seen).scalar() or 0
-    )
+    wm = _get_seen_id(db, "posts")
+    read = _get_read_ids(db, "posts", wm)
     rows = (
         db.query(Post)
         .options(selectinload(Post.author))
@@ -204,22 +246,20 @@ def _posts_category(db: Session) -> NotificationCategory:
                 or None,
                 meta=_fmt_price(p.price),
                 created_at=p.created_at,
-                is_new=p.id > seen,
+                is_new=_is_new(p.id, wm, read),
             )
         )
     return NotificationCategory(
-        key="posts", label=CATEGORY_LABELS["posts"], unread=int(unread), items=items
+        key="posts",
+        label=CATEGORY_LABELS["posts"],
+        unread=_unread_count(db, Post, wm, read),
+        items=items,
     )
 
 
 def _post_contacts_category(db: Session) -> NotificationCategory:
-    seen = _get_seen_id(db, "post_contacts")
-    unread = (
-        db.query(func.count(PostContact.id))
-        .filter(PostContact.id > seen)
-        .scalar()
-        or 0
-    )
+    wm = _get_seen_id(db, "post_contacts")
+    read = _get_read_ids(db, "post_contacts", wm)
     rows = (
         db.query(PostContact)
         .options(
@@ -233,7 +273,11 @@ def _post_contacts_category(db: Session) -> NotificationCategory:
     )
     items = []
     for pc in rows:
-        role = "Người mua quan tâm" if pc.interested_role == "buyer" else "Người bán quan tâm"
+        role = (
+            "Người mua quan tâm"
+            if pc.interested_role == "buyer"
+            else "Người bán quan tâm"
+        )
         post_title = _short(pc.post.title, 48) if pc.post else None
         items.append(
             NotificationItem(
@@ -245,13 +289,13 @@ def _post_contacts_category(db: Session) -> NotificationCategory:
                 or None,
                 meta=post_title,
                 created_at=pc.created_at,
-                is_new=pc.id > seen,
+                is_new=_is_new(pc.id, wm, read),
             )
         )
     return NotificationCategory(
         key="post_contacts",
         label=CATEGORY_LABELS["post_contacts"],
-        unread=int(unread),
+        unread=_unread_count(db, PostContact, wm, read),
         items=items,
     )
 
@@ -269,9 +313,22 @@ def get_notifications(db: Session = Depends(get_db)):
     return NotificationSummary(total_unread=total, categories=categories)
 
 
+@router.post("/notifications/read", response_model=Message)
+def mark_one_read(payload: NotificationReadIn, db: Session = Depends(get_db)):
+    """Đánh dấu đã đọc MỘT thông báo (chỉ tắt chấm của đúng mục đó)."""
+    cat = payload.category
+    wm = _get_seen_id(db, cat)
+    if payload.id > wm:
+        read = _get_read_ids(db, cat, wm)
+        read.add(payload.id)
+        _set_read_ids(db, cat, read)
+        db.commit()
+    return Message(detail="Đã đọc thông báo")
+
+
 @router.post("/notifications/seen", response_model=Message)
 def mark_seen(payload: NotificationSeenIn, db: Session = Depends(get_db)):
-    """Đánh dấu đã đọc một mục (hoặc tất cả) — nâng mốc id đã xem."""
+    """Đánh dấu đã đọc một mục (hoặc tất cả) — nâng watermark, xoá danh sách đọc lẻ."""
     targets = (
         list(MODEL_BY_CATEGORY)
         if payload.category == "all"
@@ -279,5 +336,6 @@ def mark_seen(payload: NotificationSeenIn, db: Session = Depends(get_db)):
     )
     for cat in targets:
         _set_seen_id(db, cat, _max_id(db, MODEL_BY_CATEGORY[cat]))
+        _set_read_ids(db, cat, set())
     db.commit()
     return Message(detail="Đã đánh dấu đã đọc")
