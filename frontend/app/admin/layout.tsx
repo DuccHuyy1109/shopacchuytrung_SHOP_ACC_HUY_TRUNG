@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../lib/auth";
+import NotificationBell from "../components/admin/NotificationBell";
 import {
   ArrowRight,
   Coins,
@@ -12,7 +13,6 @@ import {
   Rocket,
   ScrollText,
   ShieldCheck,
-  Tag,
   User,
 } from "../components/icons";
 
@@ -50,9 +50,7 @@ export default function AdminLayout({
     <div className="admin-shell mx-auto max-w-7xl px-4 py-6 lg:py-6 grid gap-6">
       <aside className="admin-sidebar h-fit lg:sticky lg:top-24">
         <div className="flex items-center gap-3 px-2 pb-4 mb-3 border-b border-ink-800">
-          <span className="grid place-items-center w-12 h-12 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire shrink-0">
-            <Tag className="w-6 h-6" />
-          </span>
+          <NotificationBell username={user.username} />
           <div className="min-w-0">
             <div className="font-display font-extrabold uppercase tracking-wide text-white leading-none">
               Trung tâm <span className="text-gradient-fire">quản trị</span>

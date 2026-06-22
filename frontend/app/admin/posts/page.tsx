@@ -65,6 +65,11 @@ export default function AdminPostsPage() {
   const [tab, setTab] = useState<"posts" | "postContacts" | "accContacts">(
     "accContacts",
   );
+  // Mở đúng tab khi điều hướng từ bảng thông báo (?tab=...).
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "posts" || t === "postContacts" || t === "accContacts") setTab(t);
+  }, []);
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Liên hệ & Bài đăng</h1>

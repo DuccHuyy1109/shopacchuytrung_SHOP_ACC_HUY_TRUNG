@@ -45,6 +45,38 @@ class PostContactAdminOut(BaseModel):
     poster_user: PostAuthorOut | None = None
 
 
+class NotificationItem(BaseModel):
+    """Một dòng thông báo hiển thị trong bảng thông báo của admin."""
+
+    id: int
+    title: str
+    subtitle: str | None = None
+    meta: str | None = None
+    created_at: datetime | None = None
+    is_new: bool = False
+
+
+class NotificationCategory(BaseModel):
+    """Một mục thông báo (đơn order, liên hệ mua acc, bài đăng, liên hệ bài)."""
+
+    key: str
+    label: str
+    unread: int = 0
+    items: list[NotificationItem] = []
+
+
+class NotificationSummary(BaseModel):
+    total_unread: int = 0
+    categories: list[NotificationCategory] = []
+
+
+class NotificationSeenIn(BaseModel):
+    # Mục cần đánh dấu đã đọc — "all" = đọc hết.
+    category: str = Field(
+        pattern="^(orders|account_contacts|posts|post_contacts|all)$"
+    )
+
+
 class DashboardTimePoint(BaseModel):
     date: str  # YYYY-MM-DD
     accounts: int
