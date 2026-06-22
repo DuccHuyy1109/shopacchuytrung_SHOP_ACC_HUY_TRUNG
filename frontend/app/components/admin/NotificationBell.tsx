@@ -193,19 +193,22 @@ export default function NotificationBell({ username }: { username: string }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Thông báo"
-        className="relative grid place-items-center w-12 h-12 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire shrink-0 transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-fire-400"
-      >
-        <Tag className="w-6 h-6" />
+      {/* Bọc ngoài không bị clip-path cắt -> badge ở góc hiện đầy đủ */}
+      <div className="relative shrink-0">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Thông báo"
+          className="grid place-items-center w-12 h-12 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-fire-400"
+        >
+          <Tag className="w-6 h-6" />
+        </button>
         {total > 0 && (
           <span className="notif-badge" aria-hidden="true">
             {capCount(total)}
           </span>
         )}
-      </button>
+      </div>
 
       <ModalPortal>
         <div

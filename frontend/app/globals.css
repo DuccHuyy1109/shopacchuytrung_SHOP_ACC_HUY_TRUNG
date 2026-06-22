@@ -1525,6 +1525,7 @@ select.field option:disabled {
 /* Huy hiệu số trên logo — chấm xanh lá, số trắng dễ nhìn */
 .notif-badge {
   position: absolute;
+  z-index: 2;
   top: -7px;
   right: -7px;
   display: grid;
