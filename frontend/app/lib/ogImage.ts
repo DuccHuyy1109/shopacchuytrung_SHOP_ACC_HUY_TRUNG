@@ -19,6 +19,32 @@ export function absImg(url: string | null | undefined): string | undefined {
  * Trả về ảnh OG (kèm kích thước nếu đọc được). Luôn an toàn: lỗi đọc kích thước
  * thì vẫn trả URL để nền tảng tự xử lý; không có ảnh thì trả undefined.
  */
+/** Kích thước OG chuẩn 1.91:1 — Facebook hiển thị ổn định mọi nền tảng. */
+export const OG_WIDTH = 1200;
+export const OG_HEIGHT = 630;
+
+/**
+ * Dựng thẻ OG 1200×630 từ ảnh gốc BẤT KỲ tỉ lệ nào: nền là chính ảnh đó phóng
+ * to + làm mờ + tối nhẹ để phủ kín, ảnh gốc đặt trọn ở giữa (không cắt mất chi
+ * tiết). Nhờ luôn đúng tỉ lệ chuẩn, Facebook hiển thị được cả ảnh dọc 9:16 lẫn
+ * ảnh ngang 2:1.
+ */
+export async function composeOgCard(input: Buffer): Promise<Buffer> {
+  const sharp = (await import("sharp")).default;
+  const bg = await sharp(input)
+    .resize(OG_WIDTH, OG_HEIGHT, { fit: "cover", position: "centre" })
+    .blur(26)
+    .modulate({ brightness: 0.55 })
+    .toBuffer();
+  const fg = await sharp(input)
+    .resize(OG_WIDTH, OG_HEIGHT, { fit: "inside" })
+    .toBuffer();
+  return sharp(bg)
+    .composite([{ input: fg, gravity: "centre" }])
+    .jpeg({ quality: 82 })
+    .toBuffer();
+}
+
 export async function resolveOgImage(
   url: string | null | undefined,
 ): Promise<OgImage | undefined> {

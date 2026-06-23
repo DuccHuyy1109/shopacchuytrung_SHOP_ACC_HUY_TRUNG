@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { firstMarkdownImage, formatPrice } from "../../lib/format";
-import { resolveOgImage } from "../../lib/ogImage";
+import { OG_HEIGHT, OG_WIDTH } from "../../lib/ogImage";
 import PostDetailClient from "./PostDetailClient";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+/** Domain tuyệt đối của site (để og:image là URL đầy đủ — Facebook bắt buộc). */
+async function siteBase(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  const h = await headers();
+  const host = h.get("host");
+  const proto = h.get("x-forwarded-proto") || "https";
+  return host ? `${proto}://${host}` : "";
+}
 
 export async function generateMetadata({
   params,
@@ -22,10 +32,16 @@ export async function generateMetadata({
       0,
       200,
     );
-    // Ưu tiên ảnh đã upload; nếu không có thì lấy ảnh đầu trong nội dung (markdown).
-    const img = await resolveOgImage(
-      post.images?.[0]?.image_url || firstMarkdownImage(post.caption),
+    // Có ảnh (đã upload hoặc trong nội dung) -> dùng ảnh OG 1200×630 tự sinh,
+    // đảm bảo Facebook hiển thị được mọi tỉ lệ ảnh gốc.
+    const hasImg = !!(
+      post.images?.[0]?.image_url || firstMarkdownImage(post.caption)
     );
+    const base = await siteBase();
+    const ogUrl = hasImg && base ? `${base}/posts/${id}/og` : undefined;
+    const images = ogUrl
+      ? [{ url: ogUrl, width: OG_WIDTH, height: OG_HEIGHT, alt: title }]
+      : undefined;
     return {
       title,
       description: desc,
@@ -33,13 +49,13 @@ export async function generateMetadata({
         title,
         description: desc,
         type: "website",
-        images: img ? [{ ...img, alt: title }] : undefined,
+        images,
       },
       twitter: {
         card: "summary_large_image",
         title,
         description: desc,
-        images: img ? [img.url] : undefined,
+        images: ogUrl ? [ogUrl] : undefined,
       },
     };
   } catch {
