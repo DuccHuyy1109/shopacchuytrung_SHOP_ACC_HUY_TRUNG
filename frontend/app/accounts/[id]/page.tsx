@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { formatPrice } from "../../lib/format";
+import { resolveOgImage } from "../../lib/ogImage";
 import AccountDetailClient from "./AccountDetailClient";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-function absImg(url: string | undefined): string | undefined {
-  if (!url) return undefined;
-  return url.startsWith("http") ? url : `${API}${url}`;
-}
 
 export async function generateMetadata({
   params,
@@ -28,7 +24,7 @@ export async function generateMetadata({
         .filter(Boolean)
         .join(" · ") ||
       `Acc Free Fire VIP ${acc.vip_level}, ${acc.upgraded_guns_count} súng nâng cấp — Shop Acc Huy Trung.`;
-    const img = absImg(acc.images?.[0]?.image_url);
+    const img = await resolveOgImage(acc.images?.[0]?.image_url);
     return {
       title,
       description: desc,
@@ -36,13 +32,13 @@ export async function generateMetadata({
         title,
         description: desc,
         type: "website",
-        images: img ? [{ url: img }] : undefined,
+        images: img ? [{ ...img, alt: title }] : undefined,
       },
       twitter: {
         card: "summary_large_image",
         title,
         description: desc,
-        images: img ? [img] : undefined,
+        images: img ? [img.url] : undefined,
       },
     };
   } catch {

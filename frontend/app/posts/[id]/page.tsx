@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { formatPrice } from "../../lib/format";
+import { firstMarkdownImage, formatPrice } from "../../lib/format";
+import { resolveOgImage } from "../../lib/ogImage";
 import PostDetailClient from "./PostDetailClient";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-function absImg(url: string | undefined): string | undefined {
-  if (!url) return undefined;
-  return url.startsWith("http") ? url : `${API}${url}`;
-}
 
 export async function generateMetadata({
   params,
@@ -26,21 +22,24 @@ export async function generateMetadata({
       0,
       200,
     );
-    const img = absImg(post.images?.[0]?.image_url);
+    // Ưu tiên ảnh đã upload; nếu không có thì lấy ảnh đầu trong nội dung (markdown).
+    const img = await resolveOgImage(
+      post.images?.[0]?.image_url || firstMarkdownImage(post.caption),
+    );
     return {
       title,
       description: desc,
       openGraph: {
         title,
         description: desc,
-        type: "article",
-        images: img ? [{ url: img }] : undefined,
+        type: "website",
+        images: img ? [{ ...img, alt: title }] : undefined,
       },
       twitter: {
         card: "summary_large_image",
         title,
         description: desc,
-        images: img ? [img] : undefined,
+        images: img ? [img.url] : undefined,
       },
     };
   } catch {
