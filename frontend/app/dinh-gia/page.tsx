@@ -15,6 +15,7 @@ import {
   X,
   Gamepad,
   Coins,
+  Info,
 } from "../components/icons";
 import AccountCarousel from "../components/AccountCarousel";
 import TechModal from "../components/TechModal";
@@ -34,6 +35,9 @@ export default function ValuationPage() {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // State cho Modal lưu ý (nút "!")
+  const [isNoteOpen, setIsNoteOpen] = useState(false);
 
   // State cho Modal thêm súng
   const [isGunModalOpen, setIsGunModalOpen] = useState(false);
@@ -165,17 +169,34 @@ export default function ValuationPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
       {/* Header đồng bộ với Order Acc */}
-      <div className="flex items-center gap-3">
-        <span className="grid place-items-center w-12 h-12 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire shrink-0">
-          <Gem className="w-6 h-6" />
-        </span>
-        <div>
-          <h1 className="font-display font-extrabold uppercase tracking-wide text-2xl md:text-3xl text-white leading-none">
-            Định giá <span className="text-gradient-fire">tài khoản</span>
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1.5">
-            Mô tả và định giá
-          </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="grid place-items-center w-12 h-12 clip-chien-sm bg-gradient-to-br from-fire-500 to-ember-600 text-white glow-fire shrink-0">
+            <Gem className="w-6 h-6" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="font-display font-extrabold uppercase tracking-wide text-2xl md:text-3xl text-white leading-none">
+              Định giá <span className="text-gradient-fire">tài khoản</span>
+            </h1>
+            <p className="text-sm text-zinc-400 mt-1.5">
+              Mô tả và định giá
+            </p>
+          </div>
+        </div>
+
+        {/* Nút "!" lưu ý — giao diện giống nút bên Đăng bài, luôn cùng hàng (cả mobile) */}
+        <div className="relative group/tip shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsNoteOpen(true)}
+            aria-label="Lưu ý khi mô tả tài khoản"
+            className="grid place-items-center w-10 h-10 clip-chien-sm border border-fire-500/45 bg-transparent text-fire-300 hover:text-white hover:border-fire-500 hover:bg-fire-500/10 transition shadow-[0_0_15px_-5px_rgba(255,106,0,0.6)]"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+          <span className="pointer-events-none absolute top-full mt-2 right-0 whitespace-nowrap rounded-md bg-ink-950 border border-ink-700 px-2 py-1 text-xs text-zinc-200 opacity-0 group-hover/tip:opacity-100 transition z-30">
+            Lưu ý
+          </span>
         </div>
       </div>
 
@@ -409,6 +430,34 @@ export default function ValuationPage() {
             </section>
         )}
       </div>
+
+      {/* Modal lưu ý (nút "!") */}
+      {isNoteOpen && (
+        <TechModal title="Lưu ý" Icon={Info} onClose={() => setIsNoteOpen(false)} maxWidth="max-w-lg">
+          <div className="space-y-4 text-sm leading-relaxed text-zinc-300">
+            <p>
+              <b className="text-gold-300">Lưu ý:</b> Tên các vật phẩm trên hệ thống được đặt{" "}
+              <b className="text-zinc-100">giống với tên vật phẩm đó trong game</b>. Với những vật
+              phẩm anh em không nhớ tên hoặc chưa biết tên, anh em có thể vào mục{" "}
+              <Link
+                href="/wiki"
+                className="font-semibold text-fire-300 underline underline-offset-2 hover:text-fire-200"
+              >
+                Tra cứu
+              </Link>{" "}
+              trên hệ thống để tìm đúng tên bộ đồ, súng, hành động... mà anh em muốn tìm, hoặc các
+              vật phẩm có mục đích tương tự nhé!
+            </p>
+            <Link
+              href="/guides"
+              className="inline-flex items-center gap-2 font-semibold text-volt-300 transition hover:text-white"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Đọc thêm tại mục Hướng dẫn
+            </Link>
+          </div>
+        </TechModal>
+      )}
 
       {/* Modal thêm súng - Chuyển ra ngoài cùng để đè lên mọi thứ */}
       {isGunModalOpen && (
