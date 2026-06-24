@@ -34,6 +34,15 @@ interface AdminDeposit {
   telegram_sent: boolean;
 }
 
+interface TxnDepositRef {
+  id: number;
+  deposit_code: string;
+  status: string;
+  transfer_content: string;
+  bill_images: string[] | null;
+  admin_note: string | null;
+}
+
 interface AdminTxn {
   id: number;
   type: string;
@@ -46,6 +55,8 @@ interface AdminTxn {
   user_id: number;
   username: string | null;
   full_name: string | null;
+  // Chỉ có với giao dịch nạp tiền — để xem chi tiết + ảnh bill.
+  deposit?: TxnDepositRef | null;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -280,6 +291,7 @@ function TransactionsView() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [selectedTxn, setSelectedTxn] = useState<AdminTxn | null>(null);
   const sel = useSelection<number>();
   const [bulk, setBulk] = useState<number[] | null>(null);
 
@@ -355,7 +367,8 @@ function TransactionsView() {
         onDelete={() => {
           if (
             confirm(
-              `Xóa ${sel.count} giao dịch đã chọn? Chỉ xóa lịch sử, KHÔNG đổi số dư người dùng.`,
+              `Xóa ${sel.count} giao dịch đã chọn? Chỉ xóa lịch sử, KHÔNG đổi số dư người dùng. ` +
+                `Ảnh bill của các giao dịch nạp tiền cũng sẽ bị xóa khỏi kho lưu trữ.`,
             )
           )
             setBulk([...sel.selected]);
@@ -383,6 +396,7 @@ function TransactionsView() {
                 <th className="p-3">Số dư sau GD</th>
                 <th className="p-3">Ghi chú</th>
                 <th className="p-3">Thời gian</th>
+                <th className="p-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -432,6 +446,18 @@ function TransactionsView() {
                     <td className="p-3 text-slate-400 whitespace-nowrap">
                       {formatDate(t.created_at)}
                     </td>
+                    <td className="p-3 whitespace-nowrap">
+                      {t.deposit ? (
+                        <button
+                          onClick={() => setSelectedTxn(t)}
+                          className="text-orange-600 hover:underline"
+                        >
+                          Chi tiết
+                        </button>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -458,7 +484,119 @@ function TransactionsView() {
           }}
         />
       )}
+
+      {selectedTxn && (
+        <TxnDetail txn={selectedTxn} onClose={() => setSelectedTxn(null)} />
+      )}
     </div>
+  );
+}
+
+function TxnDetail({
+  txn,
+  onClose,
+}: {
+  txn: AdminTxn;
+  onClose: () => void;
+}) {
+  const [billView, setBillView] = useState<number | null>(null);
+  const dep = txn.deposit || null;
+  const bills = dep?.bill_images || [];
+  const credit = txn.amount >= 0;
+
+  return (
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm grid place-items-center p-4">
+        <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border border-fire-500/30 bg-ink-950 p-5 text-zinc-200 shadow-[0_0_70px_-18px_rgba(255,77,0,0.7)]">
+          <h3 className="font-display font-bold text-lg uppercase tracking-wide text-white">
+            Chi tiết{" "}
+            <span className="text-gradient-fire">
+              {TXN_TYPE_LABELS[txn.type] || txn.type}
+            </span>
+          </h3>
+          <div className="mt-1 h-px bg-gradient-to-r from-fire-500/50 via-ink-700 to-transparent" />
+
+          <div className="mt-4 text-sm bg-ink-900/60 border border-ink-700 rounded-lg p-4 space-y-2">
+            <DRow
+              label="Người dùng"
+              value={`${txn.full_name || txn.username} (@${txn.username})`}
+            />
+            <DRow
+              label="Số tiền"
+              value={`${credit ? "+" : "−"}${formatPrice(Math.abs(txn.amount))}`}
+              gold
+            />
+            <DRow label="Số dư sau GD" value={formatPrice(txn.balance_after)} />
+            <DRow label="Thời gian" value={formatDate(txn.created_at)} />
+            {txn.note && <DRow label="Ghi chú" value={txn.note} />}
+          </div>
+
+          {dep && (
+            <>
+              <div className="mt-4 text-sm bg-ink-900/60 border border-ink-700 rounded-lg p-4 space-y-2">
+                <DRow label="Mã yêu cầu nạp" value={dep.deposit_code} gold />
+                <DRow label="Nội dung CK" value={dep.transfer_content} gold />
+                <DRow
+                  label="Trạng thái"
+                  value={DEPOSIT_STATUS_LABELS[dep.status] || dep.status}
+                />
+                {dep.admin_note && (
+                  <DRow label="Ghi chú admin" value={dep.admin_note} />
+                )}
+              </div>
+
+              <div className="mt-4">
+                <div className="text-sm font-semibold text-zinc-300 mb-1.5">
+                  Ảnh bill chuyển khoản{" "}
+                  <span className="text-zinc-500 font-normal">
+                    ({bills.length})
+                  </span>
+                </div>
+                {bills.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {bills.map((url, i) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setBillView(i)}
+                        className="w-20 h-20 rounded-lg border border-ink-700 overflow-hidden hover:ring-2 hover:ring-fire-400 transition"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imageUrl(url)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-zinc-500">
+                    Chưa có ảnh bill (có thể đã bị xóa khỏi kho lưu trữ).
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="flex mt-5">
+            <button
+              onClick={onClose}
+              className="ml-auto px-4 py-2 border border-ink-700 rounded-lg text-zinc-300 hover:border-fire-500/50 hover:text-white transition"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+        {billView !== null && bills.length > 0 && (
+          <Lightbox
+            images={bills}
+            start={billView}
+            onClose={() => setBillView(null)}
+          />
+        )}
+      </div>
+    </ModalPortal>
   );
 }
 

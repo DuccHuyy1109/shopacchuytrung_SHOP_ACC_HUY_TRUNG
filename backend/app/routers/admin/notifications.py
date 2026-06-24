@@ -1,10 +1,11 @@
 """Bảng thông báo trong-app cho trang quản trị.
 
-Gom 4 nguồn cần admin để mắt tới:
+Gom 5 nguồn cần admin để mắt tới:
   • orders            — Đơn order acc
   • account_contacts  — Liên hệ mua acc
   • posts             — Bài đăng mới của người dùng
   • post_contacts     — Liên hệ qua bài đăng
+  • deposits          — Yêu cầu nạp tiền (đã CK, chờ xác nhận)
 
 Trạng thái "mới/đã đọc" lưu trong site_settings, KHÔNG cần migrate DB:
   • notif_seen_<cat>  — mốc id (watermark): mọi bản ghi id <= mốc coi như cũ.
@@ -26,6 +27,7 @@ from app.core.deps import require_admin
 from app.database import get_db
 from app.models import (
     AccountContact,
+    DepositRequest,
     Order,
     Post,
     PostContact,
@@ -56,6 +58,7 @@ CATEGORY_LABELS = {
     "account_contacts": "Liên hệ mua acc",
     "posts": "Bài đăng",
     "post_contacts": "Liên hệ bài đăng",
+    "deposits": "Yêu cầu nạp tiền",
 }
 
 MODEL_BY_CATEGORY = {
@@ -63,6 +66,7 @@ MODEL_BY_CATEGORY = {
     "account_contacts": AccountContact,
     "posts": Post,
     "post_contacts": PostContact,
+    "deposits": DepositRequest,
 }
 
 
@@ -300,14 +304,44 @@ def _post_contacts_category(db: Session) -> NotificationCategory:
     )
 
 
+def _deposits_category(db: Session) -> NotificationCategory:
+    wm = _get_seen_id(db, "deposits")
+    read = _get_read_ids(db, "deposits", wm)
+    rows = (
+        db.query(DepositRequest)
+        .options(selectinload(DepositRequest.user))
+        .order_by(DepositRequest.id.desc())
+        .limit(PER_CATEGORY_LIMIT)
+        .all()
+    )
+    items = [
+        NotificationItem(
+            id=d.id,
+            title=f"Nạp {d.deposit_code}",
+            subtitle=_who(d.user),
+            meta=_fmt_price(d.amount),
+            created_at=d.created_at,
+            is_new=_is_new(d.id, wm, read),
+        )
+        for d in rows
+    ]
+    return NotificationCategory(
+        key="deposits",
+        label=CATEGORY_LABELS["deposits"],
+        unread=_unread_count(db, DepositRequest, wm, read),
+        items=items,
+    )
+
+
 @router.get("/notifications", response_model=NotificationSummary)
 def get_notifications(db: Session = Depends(get_db)):
-    """Tổng hợp thông báo cho 4 mục + số chưa đọc từng mục."""
+    """Tổng hợp thông báo cho 5 mục + số chưa đọc từng mục."""
     categories = [
         _orders_category(db),
         _account_contacts_category(db),
         _posts_category(db),
         _post_contacts_category(db),
+        _deposits_category(db),
     ]
     total = sum(c.unread for c in categories)
     return NotificationSummary(total_unread=total, categories=categories)

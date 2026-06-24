@@ -11,6 +11,7 @@ from app.schemas.common import Message, Page
 from app.schemas.wallet import (
     BalanceAdjust,
     DepositAdminOut,
+    DepositRefOut,
     DepositReject,
     PurchaseAdminOut,
     WalletTransactionAdminOut,
@@ -227,12 +228,37 @@ def list_transactions(
         .limit(page_size)
         .all()
     )
+    # Gắn thông tin yêu cầu nạp (để xem bill) cho các giao dịch nạp tiền.
+    deposit_ids = [
+        t.ref_id
+        for t in rows
+        if t.type == "deposit" and t.ref_type == "deposit" and t.ref_id
+    ]
+    deposits_map: dict[int, DepositRequest] = {}
+    if deposit_ids:
+        for d in (
+            db.query(DepositRequest)
+            .filter(DepositRequest.id.in_(deposit_ids))
+            .all()
+        ):
+            deposits_map[d.id] = d
+
     items = []
     for t in rows:
         out = WalletTransactionAdminOut.model_validate(t)
         if t.user:
             out.username = t.user.username
             out.full_name = t.user.full_name
+        d = deposits_map.get(t.ref_id) if t.ref_type == "deposit" else None
+        if d:
+            out.deposit = DepositRefOut(
+                id=d.id,
+                deposit_code=d.deposit_code,
+                status=d.status,
+                transfer_content=d.transfer_content,
+                bill_images=d.bill_images,
+                admin_note=d.admin_note,
+            )
         items.append(out)
     return Page.create(items, total, page, page_size)
 
@@ -242,10 +268,17 @@ def delete_transaction(txn_id: int, db: Session = Depends(get_db)):
     """Xóa một dòng sổ giao dịch (chỉ xóa lịch sử, KHÔNG đổi số dư người dùng).
 
     Lưu ý: xóa dòng ledger sẽ làm lệch đối soát balance_after — chỉ dùng để dọn.
+    Với giao dịch nạp tiền: xóa luôn ảnh bill trên Supabase để không rác kho ảnh
+    (giữ lại bản ghi yêu cầu nạp cho mục đích đối soát, chỉ gỡ ảnh).
     """
     txn = db.get(WalletTransaction, txn_id)
     if not txn:
         raise HTTPException(status_code=404, detail="Không tìm thấy giao dịch")
+    if txn.type == "deposit" and txn.ref_type == "deposit" and txn.ref_id:
+        deposit = db.get(DepositRequest, txn.ref_id)
+        if deposit:
+            delete_folder(f"deposits/{deposit.deposit_code}")
+            deposit.bill_images = None
     db.delete(txn)
     db.commit()
     return Message(detail="Đã xóa giao dịch")

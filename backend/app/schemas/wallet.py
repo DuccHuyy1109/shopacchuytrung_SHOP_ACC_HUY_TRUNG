@@ -99,10 +99,23 @@ class PurchaseAdminOut(PurchasedAccountOut):
 
 
 # ---------- Admin ----------
+class DepositRefOut(BaseModel):
+    """Thông tin yêu cầu nạp gắn với 1 giao dịch ví — để xem chi tiết + bill."""
+
+    id: int
+    deposit_code: str
+    status: str
+    transfer_content: str
+    bill_images: list[str] | None = None
+    admin_note: str | None = None
+
+
 class WalletTransactionAdminOut(WalletTransactionOut):
     user_id: int
     username: str | None = None
     full_name: str | None = None
+    # Chỉ có với giao dịch nạp tiền (type=deposit) — để hiện chi tiết + ảnh bill.
+    deposit: DepositRefOut | None = None
 
 
 class DepositAdminOut(DepositOut):

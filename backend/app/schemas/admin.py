@@ -73,14 +73,14 @@ class NotificationSummary(BaseModel):
 class NotificationSeenIn(BaseModel):
     # Mục cần đánh dấu đã đọc — "all" = đọc hết.
     category: str = Field(
-        pattern="^(orders|account_contacts|posts|post_contacts|all)$"
+        pattern="^(orders|account_contacts|posts|post_contacts|deposits|all)$"
     )
 
 
 class NotificationReadIn(BaseModel):
     # Đánh dấu đã đọc MỘT thông báo cụ thể.
     category: str = Field(
-        pattern="^(orders|account_contacts|posts|post_contacts)$"
+        pattern="^(orders|account_contacts|posts|post_contacts|deposits)$"
     )
     id: int
 

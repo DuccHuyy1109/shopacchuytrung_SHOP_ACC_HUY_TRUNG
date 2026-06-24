@@ -8,6 +8,7 @@ import {
   Bell,
   Check,
   CheckCheck,
+  Coins,
   Headset,
   MessageCircle,
   Rocket,
@@ -43,6 +44,7 @@ const HREF: Record<string, string> = {
   account_contacts: "/admin/posts?tab=accContacts",
   posts: "/admin/posts?tab=posts",
   post_contacts: "/admin/posts?tab=postContacts",
+  deposits: "/admin/finance",
 };
 
 /** Endpoint xóa bản ghi tương ứng từng mục. */
@@ -51,6 +53,7 @@ const DEL_PATH: Record<string, (id: number) => string> = {
   account_contacts: (id) => `/api/admin/account-contacts/${id}`,
   posts: (id) => `/api/admin/posts/${id}`,
   post_contacts: (id) => `/api/admin/post-contacts/${id}`,
+  deposits: (id) => `/api/admin/deposits/${id}`,
 };
 
 const CAT_ICON: Record<string, (p: { className?: string }) => React.ReactElement> = {
@@ -58,6 +61,7 @@ const CAT_ICON: Record<string, (p: { className?: string }) => React.ReactElement
   account_contacts: Headset,
   posts: ScrollText,
   post_contacts: MessageCircle,
+  deposits: Coins,
 };
 
 const POLL_MS = 40000;
