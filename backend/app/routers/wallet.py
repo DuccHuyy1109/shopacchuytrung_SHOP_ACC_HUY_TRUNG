@@ -8,11 +8,11 @@ from app.models.user import User
 from app.schemas.catalog import ContactInfoOut
 from app.schemas.order import BankInfo
 from app.schemas.wallet import (
-    DepositConfirmRequest,
     DepositConfirmResponse,
-    DepositCreate,
-    DepositCreateResponse,
     DepositOut,
+    DepositPrepare,
+    DepositPrepareResponse,
+    DepositSubmit,
     FeePayResponse,
     PurchasedAccountOut,
     WalletMeOut,
@@ -142,13 +142,18 @@ def my_deposits(
     )
 
 
-@router.post("/deposits", response_model=DepositCreateResponse, status_code=201)
-def create_deposit(
-    payload: DepositCreate,
+@router.post("/deposits/prepare", response_model=DepositPrepareResponse)
+def prepare_deposit(
+    payload: DepositPrepare,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Tạo yêu cầu nạp tiền & sinh QR + nội dung chuyển khoản NAPTIEN<TÊN><MÃ>."""
+    """Bước 1: sinh QR + nội dung chuyển khoản NAPTIEN<TÊN><MÃ>.
+
+    KHÔNG lưu DB — bấm 'Tiếp tục chuyển khoản' nhiều lần sẽ không tạo ra hàng
+    loạt yêu cầu rác làm loạn danh sách admin. Yêu cầu nạp chỉ được ghi nhận
+    khi khách bấm 'Tôi đã chuyển khoản' kèm ảnh bill (xem submit_deposit).
+    """
     try:
         min_amount = float(get_setting(db, "min_deposit_amount", "10000"))
     except (TypeError, ValueError):
@@ -170,7 +175,7 @@ def create_deposit(
             status_code=503, detail="Shop chưa cấu hình tài khoản thanh toán"
         )
 
-    # Sinh nội dung CK & mã yêu cầu duy nhất.
+    # Sinh nội dung CK & mã yêu cầu duy nhất (chưa lưu DB).
     account_name = current_user.full_name or current_user.username
     transfer_content, _code = make_deposit_transfer(account_name)
     while (
@@ -188,17 +193,6 @@ def create_deposit(
     ):
         deposit_code = gen_deposit_code()
 
-    deposit = DepositRequest(
-        deposit_code=deposit_code,
-        user_id=current_user.id,
-        amount=payload.amount,
-        transfer_content=transfer_content,
-        status="pending",
-    )
-    db.add(deposit)
-    db.commit()
-    db.refresh(deposit)
-
     qr_url = build_vietqr_url(
         bank_code=payment.bank_code,
         account_number=payment.account_number,
@@ -207,11 +201,11 @@ def create_deposit(
         description=transfer_content,
         template=payment.template or "compact2",
     )
-    return DepositCreateResponse(
-        deposit=DepositOut.model_validate(deposit),
-        qr_url=qr_url,
+    return DepositPrepareResponse(
+        deposit_code=deposit_code,
         amount=float(payload.amount),
         transfer_content=transfer_content,
+        qr_url=qr_url,
         bank=BankInfo(
             bank_code=payment.bank_code,
             bank_name=payment.bank_name,
@@ -221,33 +215,54 @@ def create_deposit(
     )
 
 
-@router.post(
-    "/deposits/{deposit_code}/confirm", response_model=DepositConfirmResponse
-)
-def confirm_deposit(
-    deposit_code: str,
-    payload: DepositConfirmRequest,
+@router.post("/deposits", response_model=DepositConfirmResponse, status_code=201)
+def submit_deposit(
+    payload: DepositSubmit,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Khách báo đã chuyển khoản (kèm ảnh bill) — gửi yêu cầu về Telegram."""
-    deposit = (
-        db.query(DepositRequest)
-        .filter(DepositRequest.deposit_code == deposit_code)
-        .first()
-    )
-    if not deposit or deposit.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Không tìm thấy yêu cầu nạp")
+    """Bước 2: khách báo đã chuyển khoản (kèm ảnh bill) -> TẠO yêu cầu nạp &
+    gửi thông báo Telegram cho admin.
+
+    Đây là thời điểm DUY NHẤT yêu cầu nạp được ghi vào DB và đến tay admin.
+    """
     if not payload.bill_images:
         raise HTTPException(
             status_code=400, detail="Vui lòng đính kèm ảnh bill chuyển khoản"
         )
-    if deposit.status != "pending":
+    try:
+        min_amount = float(get_setting(db, "min_deposit_amount", "10000"))
+    except (TypeError, ValueError):
+        min_amount = 10000.0
+    if payload.amount < min_amount:
         raise HTTPException(
-            status_code=400, detail="Yêu cầu nạp này đã được xử lý"
+            status_code=400,
+            detail=f"Số tiền nạp tối thiểu là {int(min_amount):,}đ".replace(",", "."),
         )
 
-    deposit.bill_images = payload.bill_images
+    # Nội dung CK giữ đúng mã QR khách đã quét; mã yêu cầu bảo đảm duy nhất.
+    transfer_content = (payload.transfer_content or "").strip()[:120]
+    if not transfer_content:
+        transfer_content, _ = make_deposit_transfer(
+            current_user.full_name or current_user.username
+        )
+    deposit_code = (payload.deposit_code or "").strip()[:30] or gen_deposit_code()
+    while (
+        db.query(DepositRequest)
+        .filter(DepositRequest.deposit_code == deposit_code)
+        .first()
+    ):
+        deposit_code = gen_deposit_code()
+
+    deposit = DepositRequest(
+        deposit_code=deposit_code,
+        user_id=current_user.id,
+        amount=payload.amount,
+        transfer_content=transfer_content,
+        bill_images=payload.bill_images,
+        status="pending",
+    )
+    db.add(deposit)
     db.commit()
     db.refresh(deposit)
     notify_deposit(deposit.id)

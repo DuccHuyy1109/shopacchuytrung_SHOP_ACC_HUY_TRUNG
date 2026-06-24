@@ -154,11 +154,11 @@ export interface DepositRequest {
   confirmed_at: string | null;
 }
 
-export interface DepositCreateResponse {
-  deposit: DepositRequest;
-  qr_url: string;
+export interface DepositPrepareResponse {
+  deposit_code: string;
   amount: number;
   transfer_content: string;
+  qr_url: string;
   bank: BankInfo;
 }
 

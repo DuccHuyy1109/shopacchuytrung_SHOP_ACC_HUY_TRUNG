@@ -15,7 +15,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from "../components/icons";
-import type { DepositCreateResponse } from "../lib/types";
+import type { DepositPrepareResponse } from "../lib/types";
 
 type Step = "amount" | "qr" | "done";
 
@@ -32,7 +32,7 @@ export default function DepositPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("amount");
   const [amount, setAmount] = useState<number>(100000);
-  const [deposit, setDeposit] = useState<DepositCreateResponse | null>(null);
+  const [deposit, setDeposit] = useState<DepositPrepareResponse | null>(null);
   const [billFiles, setBillFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +41,7 @@ export default function DepositPage() {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
 
-  async function createDeposit(e: React.FormEvent) {
+  async function prepareDeposit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!amount || amount < 10000) {
@@ -50,9 +50,11 @@ export default function DepositPage() {
     }
     setBusy(true);
     try {
-      const res = await api.post<DepositCreateResponse>("/api/deposits", {
-        amount,
-      });
+      // Bước 1 chỉ lấy QR + nội dung CK, CHƯA tạo yêu cầu nạp (chống spam).
+      const res = await api.post<DepositPrepareResponse>(
+        "/api/deposits/prepare",
+        { amount },
+      );
       setDeposit(res);
       setStep("qr");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -74,9 +76,13 @@ export default function DepositPage() {
     try {
       const bill_images = await uploadImages(
         billFiles,
-        `deposits/${deposit.deposit.deposit_code}`,
+        `deposits/${deposit.deposit_code}`,
       );
-      await api.post(`/api/deposits/${deposit.deposit.deposit_code}/confirm`, {
+      // Chỉ đến bước này (đã CK + có bill) yêu cầu nạp mới được tạo & gửi admin.
+      await api.post(`/api/deposits`, {
+        amount: deposit.amount,
+        deposit_code: deposit.deposit_code,
+        transfer_content: deposit.transfer_content,
         bill_images,
       });
       await refreshUser();
@@ -156,7 +162,7 @@ export default function DepositPage() {
       {/* Step: amount */}
       {step === "amount" && (
         <div className="frame-ember mt-5">
-          <form onSubmit={createDeposit} className="frame-ember-in p-5 md:p-7 space-y-5">
+          <form onSubmit={prepareDeposit} className="frame-ember-in p-5 md:p-7 space-y-5">
             <div className="flex items-center gap-3 pb-4 border-b border-ink-700">
               <span className="grid place-items-center w-10 h-10 clip-chien-sm bg-gradient-to-br from-gold-400 to-ember-500 text-white glow-fire shrink-0">
                 <Coins className="w-5 h-5" />
@@ -232,7 +238,7 @@ export default function DepositPage() {
             Quét mã QR để nạp tiền
           </h2>
           <p className="text-sm text-zinc-400 mt-2 text-center">
-            Mã yêu cầu: <b className="text-gold-300">{deposit.deposit.deposit_code}</b>
+            Mã yêu cầu: <b className="text-gold-300">{deposit.deposit_code}</b>
           </p>
 
           <div className="mt-7 grid lg:grid-cols-[auto_1fr] gap-8 items-start">

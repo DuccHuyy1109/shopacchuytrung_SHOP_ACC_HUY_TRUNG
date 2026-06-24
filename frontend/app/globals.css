@@ -312,6 +312,21 @@ select.field option:disabled {
   border-color: #f97316;
 }
 
+/* iOS Safari tự phóng to màn hình khi focus ô nhập có cỡ chữ < 16px.
+   Trên thiết bị cảm ứng (điện thoại/tablet) ép mọi ô nhập ≥ 16px để KHÔNG bị
+   zoom khó chịu khi bấm vào điền. Dùng (pointer: coarse) nên desktop giữ
+   nguyên cỡ chữ; KHÔNG đụng tới viewport nên người dùng vẫn chủ động
+   pinch-to-zoom được khi muốn. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea,
+  .field,
+  .input {
+    font-size: 16px;
+  }
+}
+
 /* ----------------------------- Chip/Tag ----------------------------- */
 .chip {
   display: inline-flex;

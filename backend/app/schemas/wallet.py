@@ -7,11 +7,18 @@ from app.schemas.order import BankInfo
 
 
 # ---------- Nạp tiền (người dùng) ----------
-class DepositCreate(BaseModel):
+class DepositPrepare(BaseModel):
+    """Bước 1: chỉ xin QR + nội dung CK, KHÔNG tạo bản ghi (chống spam)."""
+
     amount: float = Field(gt=0)
 
 
-class DepositConfirmRequest(BaseModel):
+class DepositSubmit(BaseModel):
+    """Bước 2: khách đã CK & có bill -> mới tạo yêu cầu nạp gửi admin."""
+
+    amount: float = Field(gt=0)
+    deposit_code: str
+    transfer_content: str
     bill_images: list[str] = []
 
 
@@ -28,11 +35,13 @@ class DepositOut(BaseModel):
     confirmed_at: datetime | None = None
 
 
-class DepositCreateResponse(BaseModel):
-    deposit: DepositOut
-    qr_url: str
+class DepositPrepareResponse(BaseModel):
+    """QR + thông tin chuyển khoản ở bước 1 — chưa lưu DB."""
+
+    deposit_code: str
     amount: float
     transfer_content: str
+    qr_url: str
     bank: BankInfo
 
 
