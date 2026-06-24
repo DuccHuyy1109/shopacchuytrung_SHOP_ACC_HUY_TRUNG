@@ -436,17 +436,17 @@ export default function ValuationPage() {
         <TechModal title="Lưu ý" Icon={Info} onClose={() => setIsNoteOpen(false)} maxWidth="max-w-lg">
           <div className="space-y-4 text-sm leading-relaxed text-zinc-300">
             <p>
-              <b className="text-gold-300">Lưu ý:</b> Tên các vật phẩm trên hệ thống được đặt{" "}
-              <b className="text-zinc-100">giống với tên vật phẩm đó trong game</b>. Với những vật
-              phẩm anh em không nhớ tên hoặc chưa biết tên, anh em có thể vào mục{" "}
+              <b className="text-gold-300">Lưu ý:</b> Tên các vật phẩm trên hệ thống được hiển thị{" "}
+              <b className="text-zinc-100">theo đúng tên gọi trong game</b>. Đối với những vật phẩm
+              anh em không nhớ hoặc chưa biết tên, hãy sử dụng mục{" "}
               <Link
                 href="/wiki"
                 className="font-semibold text-fire-300 underline underline-offset-2 hover:text-fire-200"
               >
                 Tra cứu
               </Link>{" "}
-              trên hệ thống để tìm đúng tên bộ đồ, súng, hành động... mà anh em muốn tìm, hoặc các
-              vật phẩm có mục đích tương tự nhé!
+              để tìm kiếm chính xác tên bộ đồ, súng, hành động và các vật phẩm khác mà mình đang
+              cần, hoặc với mục đích tương tự nhé!
             </p>
             <Link
               href="/guides"
