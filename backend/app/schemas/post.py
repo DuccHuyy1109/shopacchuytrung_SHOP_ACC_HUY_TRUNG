@@ -39,6 +39,7 @@ class PostOut(BaseModel):
     price: float | None = None
     status: str
     is_pinned: bool = False
+    by_admin: bool = False
     created_at: datetime | None = None
     images: list[PostImageOut] = []
 

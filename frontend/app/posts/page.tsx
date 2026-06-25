@@ -299,12 +299,22 @@ function PostRow({ post, onContact }: { post: Post; onContact: (p: Post) => void
    return (
      <article className="py-6">
        <div className="flex items-center gap-2.5">
-         <span className="grid place-items-center w-9 h-9 rounded-full bg-ink-800 border border-ink-700 text-zinc-500">
-           <User className="w-5 h-5" />
-         </span>
+         {post.by_admin ? (
+           <img
+             src="/logo_web.png"
+             alt="Shop Acc Huy Trung"
+             className="w-9 h-9 rounded-full object-cover border border-gold-500/50 shadow-[0_0_10px_rgba(212,175,55,0.3)]"
+           />
+         ) : (
+           <span className="grid place-items-center w-9 h-9 rounded-full bg-ink-800 border border-ink-700 text-zinc-500">
+             <User className="w-5 h-5" />
+           </span>
+         )}
          <div className="leading-tight">
            <div className="text-sm font-semibold text-zinc-200 flex items-center gap-1 flex-wrap">
-              <span>Người dùng ẩn danh</span>
+              <span className={post.by_admin ? "text-gradient-fire" : ""}>
+                {post.by_admin ? "Shop Acc Huy Trung" : "Người dùng ẩn danh"}
+              </span>
             </div>
            <div className="text-xs text-zinc-500">{formatDate(post.created_at)}</div>
          </div>

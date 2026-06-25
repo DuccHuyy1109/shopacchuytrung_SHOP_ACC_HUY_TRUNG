@@ -209,6 +209,7 @@ export interface Post {
   price: number | null;
   status: string;
   is_pinned?: boolean;
+  by_admin?: boolean;
   created_at: string | null;
   updated_at?: string | null;
   images: PostImage[];

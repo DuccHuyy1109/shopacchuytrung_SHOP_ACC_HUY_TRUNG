@@ -38,6 +38,12 @@ class Post(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     author = relationship("User", back_populates="posts", foreign_keys=[user_id])
+
+    @property
+    def by_admin(self) -> bool:
+        """Bài do admin (Shop Acc Huy Trung) đăng — vẫn không lộ user_id."""
+        return bool(self.author and self.author.is_admin)
+
     images = relationship(
         "PostImage",
         back_populates="post",

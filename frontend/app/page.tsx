@@ -116,18 +116,18 @@ export default function HomePage() {
         <SectionTitle Icon={Sparkles} title="Dịch vụ nổi bật" accent="volt" />
         <div className="space-y-5">
           <FeatureBanner
-            image="/image/order_acc/order_acc.jpg"
+            image="/image/dich_vu/order_acc.png"
             alt="Order acc Free Fire"
             eyebrow="Dịch vụ riêng"
             Icon={Rocket}
             accent="fire"
             title="Order acc theo yêu cầu"
-            desc="Anh em muốn acc theo yêu cầu? Chỉ cần cung cấp thông tin, shop sẽ tìm cho bạn acc ngon nhất tầm giá !!"
+            desc="Muốn sở hữu acc đúng nhu cầu? Cứ gửi tiêu chí, việc còn lại để shop lo – đảm bảo tìm acc chất lượng nhất trong ngân sách của anh em!" 
             ctaLabel="Order ngay"
             href="/order"
           />
           <FeatureBanner
-            image="/image/bai_dang/bai_dang.jpg"
+            image="/image/dich_vu/dang_bai.png"
             alt="Đăng bài mua bán acc"
             eyebrow="Cộng đồng"
             Icon={ScrollText}
@@ -139,37 +139,37 @@ export default function HomePage() {
             href="/posts"
           />
           <FeatureBanner
-            image="/image/bao_mat/bao_mat2.png"
+            image="/image/dich_vu/thu_acc.png"
             alt="Hỗ trợ thu mua acc"
             eyebrow="Thu mua"
             Icon={Gem}
             accent="violet"
-            title="Hỗ trợ thu mua acc"
-            desc="Anh em nào có nhu cầu bán acc cần lên đời hãy liên hệ shop đảm bảo mức giá không làm anh em thất vọng"
+            title="Thu mua acc giá tốt và hỗ trợ lên đời"
+            desc="Anh em có acc muốn bán hoặc lên đời? Hãy liên hệ shop, cam kết thu mua nhanh chóng với mức giá hợp lý, hỗ trợ trả góp lên đời - Giao dịch nhanh gọn và uy tín"
             ctaLabel="Liên hệ ngay"
             href={contactHref}
             external={contactExternal}
           />
           <FeatureBanner
-            image="/image/bao_mat/bao_mat4.jpg"
+            image="/image/dich_vu/nhom_zalo.png"
             alt="Nhóm Zalo cộng đồng"
             eyebrow="Cộng đồng"
             Icon={MessageCircle}
             accent="volt"
             reverse
             title="Tham gia nhóm Zalo"
-            desc="Vào nhóm Zalo của shop để cập nhật acc mới mỗi ngày, giao lưu & được hỗ trợ trực tiếp từ admin."
+            desc="Tham gia nhóm Zalo của shop để cập nhật những acc mới nhất mỗi ngày, giao lưu cùng cộng đồng và nhận hỗ trợ nhanh chóng, trực tiếp từ admin!"
             ctaLabel="Tham gia nhóm"
             href={zaloGroupHref}
             external={zaloGroupExternal}
           />
           <FeatureBanner
-            image="/image/nhom_zalo/nhom_zalo.jpg"
-            alt="Chính sách bảo mật và uy tín"
+            image="/image/dich_vu/bao_hanh.png"
+            alt="Chính sách bảo mật và bảo hành"
             eyebrow="An toàn & uy tín"
             Icon={ShieldCheck}
             accent="gold"
-            title="Chính sách bảo mật"
+            title="Chính sách bảo mật và bảo hành"
             desc="Cam kết bảo mật thông tin khách hàng tuyệt đối. Hướng dẫn đổi & bảo mật thông tin acc an toàn sau khi mua — chuyên nghiệp, minh bạch."
             ctaLabel="Xem chi tiết"
             href="/guides"

@@ -121,7 +121,7 @@ def list_posts(
         query = query.filter(Post.post_type == post_type)
     total = query.count()
     posts = (
-        query.options(selectinload(Post.images))
+        query.options(selectinload(Post.images), selectinload(Post.author))
         .order_by(Post.is_pinned.desc(), Post.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
@@ -152,7 +152,7 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
     """Chi tiết bài đăng đã duyệt (ẩn người đăng)."""
     post = (
         db.query(Post)
-        .options(selectinload(Post.images))
+        .options(selectinload(Post.images), selectinload(Post.author))
         .filter(Post.id == post_id)
         .first()
     )
