@@ -7,6 +7,14 @@ import Header from "./components/Header";
 import ConditionalFooter from "./components/ConditionalFooter";
 import AnnouncementPopup from "./components/AnnouncementPopup";
 import EmberBackground from "./components/EmberBackground";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from "./lib/seo";
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -22,17 +30,92 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  ),
-  title: "Shop Acc Huy Trung — Mua bán acc Free Fire uy tín",
-  description:
-    "Shop Acc Huy Trung — Mua bán tài khoản game Free Fire: acc cổ, acc siêu phẩm, acc theo giá. Order acc theo yêu cầu, giao dịch an toàn.",
-  appleWebApp: { capable: true, title: "Shop Acc Huy Trung" },
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    // Trang con chỉ cần đặt tiêu đề ngắn -> tự thêm " | Shop Acc Huy Trung".
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "shopping",
+  alternates: { canonical: "/" },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/icon-192.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "vi_VN",
+    url: "/",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  appleWebApp: { capable: true, title: SITE_NAME },
+  // Sau khi xác minh ở Google Search Console, dán mã vào đây:
+  // verification: { google: "ma-xac-minh-cua-ban" },
 };
 
 export const viewport: Viewport = {
   themeColor: "#07070b",
+};
+
+/** Dữ liệu có cấu trúc (JSON-LD) giúp Google hiểu đây là một cửa hàng + bật ô
+ *  tìm kiếm thương hiệu. Đặt ở <head> qua thẻ script. */
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Store",
+      "@id": `${SITE_URL}/#store`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
+      image: `${SITE_URL}/logo_web.png`,
+      description: SITE_DESCRIPTION,
+      priceRange: "10.000₫ - 50.000.000₫",
+      areaServed: "VN",
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      inLanguage: "vi-VN",
+      publisher: { "@id": `${SITE_URL}/#store` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/accounts?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -48,6 +131,10 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col antialiased"
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <EmberBackground />
         <AuthProvider>
           <Suspense

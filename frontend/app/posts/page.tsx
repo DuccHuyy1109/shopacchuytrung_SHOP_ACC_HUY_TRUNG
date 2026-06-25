@@ -310,8 +310,8 @@ function PostRow({ post, onContact }: { post: Post; onContact: (p: Post) => void
          </div>
          <div className="ml-auto flex items-center gap-1.5">
            {post.is_pinned && (
-             <span className="inline-flex items-center gap-1 text-[0.7rem] font-bold uppercase px-2.5 py-1 rounded-lg bg-gold-500/15 text-gold-300 border border-gold-500/30 shadow-[0_2px_8px_rgba(212,175,55,0.15)]">
-               <Star className="w-3.5 h-3.5" />
+             <span className="inline-flex items-center gap-1.5 text-[0.9rem] font-bold uppercase px-3 py-1.5 rounded-lg border font-display tracking-wide glow-sm text-gold-300 border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.3)]">
+               <Star className="w-4 h-4" />
                Ghim
              </span>
            )}

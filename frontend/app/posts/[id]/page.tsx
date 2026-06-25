@@ -45,10 +45,12 @@ export async function generateMetadata({
     return {
       title,
       description: desc,
+      alternates: { canonical: `/posts/${id}` },
       openGraph: {
         title,
         description: desc,
         type: "website",
+        url: `/posts/${id}`,
         images,
       },
       twitter: {
@@ -59,7 +61,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Bài đăng — Shop Acc Huy Trung" };
+    return { title: "Bài đăng" };
   }
 }
 

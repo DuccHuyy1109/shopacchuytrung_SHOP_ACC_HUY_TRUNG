@@ -28,10 +28,12 @@ export async function generateMetadata({
     return {
       title,
       description: desc,
+      alternates: { canonical: `/accounts/${id}` },
       openGraph: {
         title,
         description: desc,
         type: "website",
+        url: `/accounts/${id}`,
         images: img ? [{ ...img, alt: title }] : undefined,
       },
       twitter: {
@@ -42,7 +44,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Chi tiết acc — Shop Acc Huy Trung" };
+    return { title: "Chi tiết acc" };
   }
 }
 
