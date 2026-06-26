@@ -138,8 +138,8 @@ export default function FeatureBanner({
           reverse ? "md:flex-row-reverse" : "md:flex-row"
         } items-stretch min-h-[210px]`}
       >
-        {/* Ảnh */}
-        <div className="relative md:w-[46%] min-h-[150px] md:min-h-0 overflow-hidden">
+        {/* Ảnh — mobile: hiện full ảnh tỉ lệ 2:1, không phủ khói; desktop: fade hoà vào nền */}
+        <div className="relative md:w-[46%] aspect-[2/1] md:aspect-auto md:min-h-0 overflow-hidden">
           {image && imgOk ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -153,13 +153,12 @@ export default function FeatureBanner({
               <div className={`w-44 h-44 rounded-full blur-2xl ${a.orb}`} />
             </div>
           )}
-          {/* Fade hoà ảnh vào nền */}
+          {/* Fade hoà ảnh vào nền — chỉ trên desktop, mobile để ảnh sạch */}
           <div
-            className={`absolute inset-0 bg-gradient-to-${
+            className={`hidden md:block absolute inset-0 bg-gradient-to-${
               reverse ? "l" : "r"
             } from-transparent via-transparent to-ink-900`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 to-transparent md:hidden" />
         </div>
 
         {/* Nội dung */}

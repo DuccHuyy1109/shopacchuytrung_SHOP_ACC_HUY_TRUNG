@@ -13,6 +13,7 @@ import {
   Layers,
   Rocket,
   ScrollText,
+  Gem,
   ArrowRight,
 } from "./icons";
 
@@ -39,7 +40,8 @@ export default function Footer() {
     { href: "/accounts", label: "Danh sách acc", Icon: Layers },
     { href: "/order", label: "Order acc theo yêu cầu", Icon: Rocket },
     { href: "/posts", label: "Bài đăng mua bán", Icon: ScrollText },
-    { href: "/guides", label: "Hướng dẫn giao dịch", Icon: ShieldCheck },
+    { href: "/dinh-gia", label: "Định giá acc", Icon: Gem },
+    { href: "/guides", label: "Hướng dẫn toàn bộ", Icon: ShieldCheck },
   ];
 
   const badges = [
