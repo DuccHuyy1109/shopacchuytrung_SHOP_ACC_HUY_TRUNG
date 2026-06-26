@@ -40,6 +40,9 @@ export default function PostsPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useRef<HTMLDivElement | null>(null);
+  // Khóa đồng bộ: chặn 2 lần gọi loadMore cùng lúc (effect tải đầu + observer)
+  // vì state `loading` cập nhật bất đồng bộ -> nếu không sẽ fetch trùng trang.
+  const loadingRef = useRef(false);
 
   const [contactPost, setContactPost] = useState<Post | null>(null);
   const [contact, setContact] = useState<ContactInfo | null>(null);
@@ -47,7 +50,8 @@ export default function PostsPage() {
   const [error, setError] = useState("");
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loadingRef.current || !hasMore) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -56,15 +60,27 @@ export default function PostsPage() {
       });
       if (filter) params.set("post_type", filter);
       const data = await api.get<Page<Post>>(`/api/posts?${params.toString()}`);
-      setPosts((prev) => [...prev, ...data.items]);
+      // Nối nhưng khử trùng theo id — phòng trường hợp 2 lần fetch cùng trang.
+      setPosts((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const merged = [...prev];
+        for (const it of data.items) {
+          if (!seen.has(it.id)) {
+            seen.add(it.id);
+            merged.push(it);
+          }
+        }
+        return merged;
+      });
       setHasMore(data.items.length === PAGE_SIZE && data.pages > Math.floor((posts.length + PAGE_SIZE) / PAGE_SIZE));
     } catch (e) {
       console.error("Error loading posts:", e);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
       setInitialLoading(false);
     }
-  }, [posts.length, filter, loading, hasMore]);
+  }, [posts.length, filter, hasMore]);
 
   useEffect(() => {
     setPosts([]);

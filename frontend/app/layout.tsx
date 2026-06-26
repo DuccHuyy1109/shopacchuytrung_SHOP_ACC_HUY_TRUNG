@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Be_Vietnam_Pro, Oswald } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./lib/auth";
+import { ThemeProvider } from "./lib/theme";
 import Header from "./components/Header";
 import ConditionalFooter from "./components/ConditionalFooter";
 import AnnouncementPopup from "./components/AnnouncementPopup";
@@ -131,23 +132,32 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col antialiased"
       >
+        {/* No-flash: đặt theme (light/dark) TRƯỚC khi vẽ để tránh nháy màu. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('sht-theme');if(t==='light'){var r=document.documentElement;r.classList.add('light');r.style.colorScheme='light';}}catch(e){}})();",
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <EmberBackground />
-        <AuthProvider>
-          <Suspense
-            fallback={
-              <div className="h-[2px] w-full bg-gradient-to-r from-fire-500 via-ember-500 to-gold-400" />
-            }
-          >
-            <Header />
-          </Suspense>
-          <main className="flex-1">{children}</main>
-          <ConditionalFooter />
-          <AnnouncementPopup />
-        </AuthProvider>
+        <ThemeProvider>
+          <EmberBackground />
+          <AuthProvider>
+            <Suspense
+              fallback={
+                <div className="h-[2px] w-full bg-gradient-to-r from-fire-500 via-ember-500 to-gold-400" />
+              }
+            >
+              <Header />
+            </Suspense>
+            <main className="flex-1">{children}</main>
+            <ConditionalFooter />
+            <AnnouncementPopup />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

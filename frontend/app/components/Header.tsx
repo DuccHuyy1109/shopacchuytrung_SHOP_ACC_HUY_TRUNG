@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useTheme } from "../lib/theme";
 import { formatPrice } from "../lib/format";
 import type { PriceCategory } from "../lib/types";
 import {
@@ -24,10 +25,13 @@ import {
   Layers,
   Zap,
   Sparkles,
+  Sun,
+  Moon,
 } from "./icons";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -259,6 +263,10 @@ export default function Header() {
     </>
   );
 
+  // Trước khi mount, luôn coi là "dark" để khớp HTML render từ server
+  // (theme thật chỉ đọc được từ localStorage ở client) -> tránh hydration mismatch.
+  const isLight = mounted && theme === "light";
+
   return (
     <header className="sticky top-0 z-40">
       {/* Vạch gradient lửa trên cùng */}
@@ -452,7 +460,8 @@ export default function Header() {
             </button>
           </div>
 
-          <div className="h-[calc(100%-81px)] overflow-auto px-3 py-4">
+          <div className="flex h-[calc(100%-81px)] flex-col">
+            <div className="flex-1 overflow-auto px-3 py-4">
             <MobileNavLink href="/" active={active.home} onClick={() => {
               setMobileOpen(false);
               setMobilePriceOpen(false);
@@ -549,6 +558,49 @@ export default function Header() {
                 Tra cứu
               </MobileNavLink>
             )}
+            </div>
+
+            {/* Chuyển giao diện Sáng / Tối — GHIM ở đáy drawer.
+                Gate theo `mounted`: server + lần render đầu luôn coi là "dark"
+                để khớp HTML server, tránh lỗi hydration; sau mount mới theo
+                theme thật đã lưu. */}
+            <div className="shrink-0 border-t border-ink-800 bg-ink-950/40 px-4 py-4">
+              <div className="mb-2 px-1 text-[0.7rem] font-bold uppercase tracking-[0.22em] text-zinc-500">
+                Giao diện
+              </div>
+              <div className="relative grid grid-cols-2 gap-1 rounded-xl border border-ink-700 bg-ink-900/60 p-1">
+                {/* Thumb trượt */}
+                <span
+                  className={`absolute inset-y-1 left-1 w-[calc(50%-0.375rem)] rounded-lg bg-gradient-to-br shadow-lg transition-all duration-300 ease-out ${
+                    isLight
+                      ? "translate-x-[calc(100%+0.25rem)] from-gold-300 to-gold-500 shadow-[0_6px_18px_-8px_rgba(212,175,55,0.9)]"
+                      : "translate-x-0 from-fire-500 to-ember-600 shadow-[0_6px_18px_-8px_rgba(255,77,0,0.9)]"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setTheme("dark")}
+                  aria-pressed={!isLight}
+                  className={`relative z-10 flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-bold transition-colors ${
+                    !isLight ? "text-white" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  <Moon className="w-4 h-4" />
+                  Tối
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme("light")}
+                  aria-pressed={isLight}
+                  className={`relative z-10 flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-bold transition-colors ${
+                    isLight ? "text-[#231a02]" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  <Sun className="w-4 h-4" />
+                  Sáng
+                </button>
+              </div>
+            </div>
           </div>
         </aside>
       </div>

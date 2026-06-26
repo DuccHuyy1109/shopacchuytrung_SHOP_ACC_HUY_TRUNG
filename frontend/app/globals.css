@@ -1782,3 +1782,327 @@ select.field option:disabled {
   .scan-line,
   .hud-bracket { animation: none !important; }
 }
+
+/* ===================================================================
+   ☀️  GIAO DIỆN SÁNG ("NIGHT MODE" theo cách gọi của shop)
+   Kích hoạt bằng class `.light` trên <html> (ThemeProvider + nút ở menu).
+   Triết lý: "Sứ nung chảy" — nền sứ trắng mát, chữ than chì, vẫn giữ
+   nguyên lửa cam + vàng gold để giữ chất "ngầu". Lật toàn site bằng cách
+   ghi đè token màu (Tailwind v4: utility = var of color) nên mọi
+   bg-ink, text-zinc, border-ink tự đổi theo, đồng bộ tuyệt đối.
+=================================================================== */
+html.light {
+  color-scheme: light;
+
+  /* Ink — sứ champagne ấm (greige), CÓ chiều sâu để không bị "quá trắng".
+     Số lớn = nền nền hơn; thẻ (ink-800) sáng nhất để nổi khối. */
+  --color-ink-950: #e4ddd0; /* nền gốc (body, top bar, drawer) — ngả be sâu */
+  --color-ink-900: #ece5d8; /* panel trang */
+  --color-ink-850: #f3ede1; /* lớp nâng nhẹ */
+  --color-ink-800: #fffdf8; /* mặt thẻ — trắng ngà ấm, nổi khối */
+  --color-ink-750: #e8e1d3;
+  --color-ink-700: #d8cfbd; /* viền mềm ấm */
+  --color-ink-600: #c4b9a3; /* viền đậm */
+  --color-ink-500: #a89c84;
+
+  /* Zinc (chữ) — than chì ngả ấm, tương phản tốt trên nền be */
+  --color-zinc-100: #1c1812;
+  --color-zinc-200: #2a251c;
+  --color-zinc-300: #3c362b; /* thân bài chính */
+  --color-zinc-400: #5d5647; /* phụ */
+  --color-zinc-500: #756c59; /* mờ / nhãn (dùng nhiều nhất) */
+  --color-zinc-600: #8f8571; /* nhạt */
+
+  /* Điểm nhấn — đậm lại tông quá nhạt để đọc rõ trên nền sáng,
+     vẫn giữ đúng "gam" lửa/vàng/điện. Chỉ tác động ở light. */
+  --color-fire-300: #d9540a;
+  --color-fire-400: #d4550a;
+  --color-gold-300: #a9780a;
+  --color-gold-400: #9c6e09;
+  --color-volt-300: #0e7490;
+  --color-volt-400: #0b7fa0;
+  /* Một vài tông Tailwind mặc định dùng làm icon/nhãn nhỏ */
+  --color-emerald-400: #047857;
+  --color-emerald-300: #036848;
+  --color-violet-400: #6d28d9;
+  --color-sky-300: #0369a1;
+  --color-sky-500: #075985;
+  --color-teal-500: #0d9488;
+
+  --background: #e4ddd0;
+  --foreground: #2a2419;
+}
+
+/* Nền site: sứ champagne + vầng ấm lửa/vàng + chuyển sắc dọc cho chiều sâu
+   (tránh cảm giác phẳng/trắng toát). */
+html.light body {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(52rem 52rem at 88% -14%, rgba(255, 106, 0, 0.12), transparent 58%),
+    radial-gradient(46rem 46rem at -12% 4%, rgba(212, 175, 55, 0.12), transparent 56%),
+    radial-gradient(40rem 40rem at 50% 122%, rgba(255, 77, 0, 0.07), transparent 60%),
+    linear-gradient(180deg, #ece5d8 0%, #e4ddd0 42%, #ddd4c4 100%);
+  background-attachment: fixed;
+}
+
+/* Tiêu đề & chữ trắng -> than chì (giữ trắng cho nút/nền nhấn ở dưới) */
+html.light :is(h1, h2, h3, h4, h5) {
+  color: #14161c;
+}
+html.light .text-white {
+  color: #16181d;
+}
+html.light .hover\:text-white:hover {
+  color: #14161c;
+}
+/* Giữ chữ TRẮNG trên NÚT NHẤN gradient màu (lửa/than/vàng/lục/điện).
+   Chỉ khớp khi gradient màu nhấn + text-white nằm CÙNG element (đó là nút),
+   nên không đụng nav active (bg-fire-500/10 nền nhạt) hay tiêu đề trong panel. */
+html.light .btn-fire,
+html.light .btn-primary,
+html.light [class*="from-fire-"].text-white,
+html.light [class*="from-ember-"].text-white,
+html.light [class*="from-gold-"].text-white,
+html.light [class*="from-emerald-"].text-white,
+html.light [class*="from-volt-"].text-white,
+html.light [class*="from-sky-"].text-white,
+html.light [class*="from-violet-"].text-white {
+  color: #fff;
+}
+
+/* Viền / nền bán trong suốt bằng màu trắng (chrome trên nền tối cũ)
+   -> đổi sang than mờ để hiện rõ trên nền sáng. Giữ nguyên loại đậm
+   (/40 /70…) vì đó là nút nổi trên ẢNH. */
+html.light .border-white\/10 { border-color: rgba(60, 46, 18, 0.12); }
+html.light .border-white\/25 { border-color: rgba(60, 46, 18, 0.18); }
+html.light .hover\:border-white\/10:hover { border-color: rgba(60, 46, 18, 0.14); }
+html.light .bg-white\/\[0\.015\] { background-color: rgba(60, 46, 18, 0.03); }
+html.light .bg-white\/\[0\.025\] { background-color: rgba(60, 46, 18, 0.04); }
+html.light .hover\:bg-white\/\[0\.03\]:hover { background-color: rgba(60, 46, 18, 0.05); }
+html.light .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(60, 46, 18, 0.05); }
+html.light .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(60, 46, 18, 0.06); }
+
+/* Bề mặt / thẻ / khung — trắng ngà ấm + bóng đổ ấm nhiều lớp (sang, có khối),
+   thay cho glow neon của bản tối. */
+html.light .surface {
+  background: linear-gradient(180deg, #fffefb, #f6efe2);
+  border-color: var(--color-ink-700);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 2px 6px -2px rgba(60, 46, 18, 0.10),
+    0 22px 54px -28px rgba(60, 46, 18, 0.45);
+}
+html.light .card-chien {
+  background: linear-gradient(180deg, #fffefb 0%, #f6efe2 100%);
+  border-color: var(--color-ink-700);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 2px 5px -2px rgba(60, 46, 18, 0.10),
+    0 18px 44px -26px rgba(60, 46, 18, 0.42);
+}
+html.light .card-chien:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 10px 22px -10px rgba(255, 106, 0, 0.28),
+    0 24px 56px -26px rgba(60, 46, 18, 0.5);
+}
+html.light .frame-chien-in { background-color: #fffdf8; }
+html.light .neon-edge {
+  background:
+    linear-gradient(180deg, #fffefb, #f5eee1) padding-box,
+    linear-gradient(135deg, var(--color-fire-500), var(--color-volt-500) 55%, var(--color-gold-400)) border-box;
+}
+html.light .border-fire {
+  background:
+    linear-gradient(#fffdf8, #fffdf8) padding-box,
+    linear-gradient(135deg, var(--color-fire-500), var(--color-ember-500)) border-box;
+}
+html.light .announcement-popup {
+  background: linear-gradient(180deg, #fffefb, #f6efe2);
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.28), 0 18px 50px -22px rgba(255, 77, 0, 0.45);
+}
+html.light .valuation-result {
+  background:
+    radial-gradient(18rem 12rem at 100% 0%, rgba(212, 175, 55, 0.18), transparent 62%),
+    linear-gradient(180deg, #fffefb, #f6efe2);
+  box-shadow: 0 20px 52px -40px rgba(212, 175, 55, 0.6);
+}
+
+/* Form */
+html.light .field {
+  background: #fffdf8;
+  border-color: var(--color-ink-700);
+  color: #2a2419;
+}
+html.light .field::placeholder { color: #9a917d; }
+html.light select.field {
+  color-scheme: light;
+  background-color: #fffdf8;
+}
+html.light select.field option { background-color: #fffdf8; color: #2a2419; }
+
+/* Chip / nút phụ */
+html.light .chip {
+  background: rgba(60, 46, 18, 0.05);
+  border-color: var(--color-ink-700);
+  color: #463f30;
+}
+html.light .btn-ghost {
+  color: #2a2419;
+  background: rgba(60, 46, 18, 0.04);
+  border-color: var(--color-ink-600);
+}
+html.light .btn-ghost:hover {
+  background: rgba(255, 106, 0, 0.10);
+  border-color: var(--color-fire-500);
+}
+
+/* Lưới mờ trang trí: kẻ trắng -> kẻ than ấm mờ để thấy trên nền sáng */
+html.light .bg-grid-fade {
+  background-image:
+    linear-gradient(to right, rgba(60, 46, 18, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(60, 46, 18, 0.06) 1px, transparent 1px);
+}
+
+/* Tàn lửa nền: giữ chút ấm tinh tế trên nền sáng (không chói) */
+html.light .ember-fx { opacity: 0.45; }
+
+/* Thanh cuộn sáng (tông ấm) */
+html.light * { scrollbar-color: #cabfa8 transparent; }
+html.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(#d8cdb6, #cabfa8);
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(var(--color-fire-500), var(--color-ember-500));
+}
+html.light ::selection {
+  background: rgba(255, 106, 0, 0.22);
+  color: #14161c;
+}
+
+/* ===================================================================
+   ☀️  ADMIN Ở CHẾ ĐỘ SÁNG — control center theo tông champagne.
+   Lật toàn bộ panel/thẻ/bảng/input từ tối -> sáng (nhiều rule gốc dùng
+   !important nên override cũng cần !important hoặc đặc tả cao hơn). Token
+   ink/zinc/accent đã tự sáng theo html.light, ở đây xử lý phần hex cứng.
+=================================================================== */
+html.light .admin-shell {
+  color-scheme: light;
+  color: #3c362b;
+}
+html.light .admin-shell :is(h1, h2, h3, h4, h5),
+html.light .admin-shell .admin-section-title,
+html.light .admin-shell h1,
+html.light .admin-shell .text-white {
+  color: #241f15;
+}
+
+/* Panel / thẻ / sidebar — nền trắng ngà ấm + bóng dịu */
+html.light .admin-sidebar,
+html.light .admin-hero-panel,
+html.light .admin-panel,
+html.light .admin-metric-card,
+html.light .admin-alert-card,
+html.light .admin-quick-action,
+html.light .admin-post-card,
+html.light .admin-filter-panel {
+  border-color: rgba(60, 46, 18, 0.12);
+  background:
+    linear-gradient(180deg, #fffefb, #f4ede0),
+    radial-gradient(30rem 16rem at 0% 0%, rgba(255, 106, 0, 0.06), transparent 62%);
+  box-shadow:
+    0 2px 6px -2px rgba(60, 46, 18, 0.10),
+    0 18px 46px -28px rgba(60, 46, 18, 0.42);
+}
+html.light .admin-hero-panel {
+  background:
+    radial-gradient(44rem 18rem at 100% 0%, rgba(56, 189, 248, 0.10), transparent 64%),
+    linear-gradient(115deg, #fffefb, #f4ede0 60%, #f1ece6);
+}
+html.light .admin-alert-gold,
+html.light .admin-alert-fire,
+html.light .admin-alert-green {
+  background:
+    radial-gradient(18rem 10rem at 100% 0%, rgba(212, 175, 55, 0.14), transparent 58%),
+    linear-gradient(180deg, #fffefb, #f5efe3);
+}
+/* Thẻ doanh thu (lửa) giữ nguyên chất accent — chữ trắng đọc rõ trên cam */
+html.light .admin-revenue-card,
+html.light .admin-revenue-card :is(h1, h2, h3, h4, h5),
+html.light .admin-revenue-card .text-white {
+  color: #fff;
+}
+
+/* Ô icon nhỏ — nền tint than/accent thay cho tint trắng (vô hình trên sáng) */
+html.light .admin-metric-icon,
+html.light .admin-quick-icon {
+  border-color: rgba(60, 46, 18, 0.12);
+  background: rgba(60, 46, 18, 0.05);
+}
+
+/* Nav item hover / chip ID / info-chip */
+html.light .admin-nav-item:hover {
+  border-color: rgba(60, 46, 18, 0.14);
+  background: rgba(60, 46, 18, 0.05);
+}
+html.light .admin-info-chip b { color: #241f15; }
+
+/* Chữ slate (gốc ép xám sáng cho nền tối) -> ép xám đậm cho nền sáng */
+html.light .admin-shell .text-slate-400,
+html.light .admin-shell .text-slate-500,
+html.light .admin-shell .text-slate-600,
+html.light .admin-shell .text-slate-700 { color: #6b6253 !important; }
+html.light .admin-shell .text-slate-800 { color: #241f15 !important; }
+
+/* Input / select / textarea -> nền sáng, chữ đậm */
+html.light .admin-shell .input,
+html.light .admin-shell input,
+html.light .admin-shell textarea,
+html.light .admin-shell select {
+  border-color: rgba(60, 46, 18, 0.18) !important;
+  background: #fffdf8 !important;
+  color: #2a2419 !important;
+}
+html.light .admin-shell .input::placeholder,
+html.light .admin-shell input::placeholder,
+html.light .admin-shell textarea::placeholder { color: #9a917d !important; }
+html.light .admin-shell select option { background: #fffdf8; color: #2a2419; }
+html.light .admin-shell .field,
+html.light .admin-shell select.field { color-scheme: light; }
+
+/* Các ô gốc bị ép tối (.bg-white...) -> trả lại nền sáng trong admin */
+html.light .admin-shell .bg-white,
+html.light .admin-shell .bg-slate-50,
+html.light .admin-shell .bg-slate-100 {
+  background:
+    linear-gradient(180deg, #fffefb, #f5efe3) !important;
+}
+
+/* Bảng dữ liệu */
+html.light .admin-shell thead {
+  background: rgba(255, 106, 0, 0.10) !important;
+  color: #c4540a !important;
+}
+html.light .admin-shell tbody tr { color: #3c362b; }
+html.light .admin-shell tbody tr:hover { background: rgba(60, 46, 18, 0.04); }
+html.light .admin-shell th,
+html.light .admin-shell td { border-color: rgba(60, 46, 18, 0.14) !important; }
+
+/* Nút phụ / nút viền trong admin */
+html.light .admin-shell .btn-ghost,
+html.light .admin-shell button.border,
+html.light .admin-shell a.border {
+  border-color: rgba(60, 46, 18, 0.16) !important;
+  background: rgba(60, 46, 18, 0.04) !important;
+  color: #2a2419 !important;
+}
+
+/* Viền slate (gốc ép xám đậm cho nền tối) -> viền ấm nhạt cho nền sáng */
+html.light .admin-shell .border-slate-100,
+html.light .admin-shell .border-slate-200,
+html.light .admin-shell .border-slate-300,
+html.light .admin-shell tbody tr {
+  border-color: rgba(60, 46, 18, 0.14) !important;
+}
+/* Vạch viền dưới header sidebar admin */
+html.light .admin-shell .border-ink-800 { border-color: rgba(60, 46, 18, 0.12); }
