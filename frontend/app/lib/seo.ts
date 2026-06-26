@@ -38,10 +38,14 @@ export const SITE_KEYWORDS = [
   "shop acc ff uy tín",
 ];
 
-/** Ảnh OG mặc định (logo vuông) — dùng cho trang chủ & trang không có ảnh riêng. */
+/**
+ * Ảnh OG mặc định khi share link lên Facebook/Zalo... — dùng banner slideshow #3
+ * của trang chủ (tỉ lệ 2:1, đẹp cho thẻ chia sẻ). Áp dụng cho trang chủ & các
+ * trang không có ảnh riêng; trang chi tiết acc/bài đăng vẫn dùng ảnh của nó.
+ */
 export const DEFAULT_OG_IMAGE = {
-  url: "/logo_web.png",
-  width: 1254,
-  height: 1254,
-  alt: SITE_NAME,
+  url: "/image/slide/slideshow3.png",
+  width: 1774,
+  height: 887,
+  alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
 };
