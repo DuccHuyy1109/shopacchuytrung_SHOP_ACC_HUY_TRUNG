@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, imageUrl } from "../../lib/api";
 import {
   ACCOUNT_BACK_PARAM,
@@ -126,6 +126,16 @@ export default function AccountDetailClient({ id }: { id: string }) {
       .then(setAcc)
       .catch(() => setAcc(null))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  // Ghi nhận lượt xem ĐÚNG 1 lần cho mỗi acc. Dùng ref khóa theo id để
+  // StrictMode (dev double-invoke) hay re-render không gọi trùng -> không
+  // còn cảnh 1 lần mở = 2 lượt xem.
+  const viewedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewedIdRef.current === id) return;
+    viewedIdRef.current = id;
+    api.post(`/api/accounts/${id}/view`).catch(() => {});
   }, [id]);
 
   const listBackHref = searchParams.get(ACCOUNT_BACK_PARAM) ?? undefined;

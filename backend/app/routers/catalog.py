@@ -164,7 +164,11 @@ def get_account_by_code(code: str, db: Session = Depends(get_db)):
 
 @router.get("/accounts/{account_id}", response_model=AccountPublicOut)
 def get_account(account_id: int, db: Session = Depends(get_db)):
-    """Chi tiết một acc (tự tăng lượt xem). Không lộ thông tin shop."""
+    """Chi tiết một acc. Không lộ thông tin shop.
+
+    LƯU Ý: GET không tăng lượt xem (tránh đếm trùng khi prefetch/refetch/
+    React StrictMode). Lượt xem được ghi nhận qua POST .../view bên dưới.
+    """
     account = (
         db.query(Account)
         .options(
@@ -177,10 +181,20 @@ def get_account(account_id: int, db: Session = Depends(get_db)):
     )
     if not account or account.status == "hidden":
         raise HTTPException(status_code=404, detail="Không tìm thấy acc")
+    return account
+
+
+@router.post("/accounts/{account_id}/view")
+def track_account_view(account_id: int, db: Session = Depends(get_db)):
+    """Ghi nhận đúng 1 lượt xem acc — tách khỏi GET để mỗi lần mở chỉ +1.
+
+    Client gọi 1 lần khi mở trang chi tiết (có khóa chống gọi trùng)."""
+    account = db.get(Account, account_id)
+    if not account or account.status == "hidden":
+        raise HTTPException(status_code=404, detail="Không tìm thấy acc")
     account.view_count = (account.view_count or 0) + 1
     db.commit()
-    db.refresh(account)
-    return account
+    return {"view_count": account.view_count}
 
 
 @router.post(
