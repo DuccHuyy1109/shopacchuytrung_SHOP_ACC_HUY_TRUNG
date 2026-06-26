@@ -6,7 +6,6 @@ import { api } from "../lib/api";
 import type { ContactInfo } from "../lib/types";
 import {
   MessageCircle,
-  Facebook,
   ShieldCheck,
   BadgeCheck,
   Tag,
@@ -143,7 +142,7 @@ export default function Footer() {
                     className="group flex items-center gap-2.5 text-zinc-300 hover:text-white transition"
                   >
                     <span className="grid place-items-center w-8 h-8 rounded-lg bg-ink-800 border border-ink-700 text-blue-400 group-hover:border-blue-400/60 transition">
-                      <Facebook className="w-4 h-4" />
+                      <MessageCircle className="w-4 h-4" />
                     </span>
                     Facebook
                   </a>

@@ -3,8 +3,9 @@
  * Sửa một nơi -> áp dụng mọi trang.
  */
 export const SITE_NAME = "Shop Acc Huy Trung";
-export const SITE_TAGLINE = "Mua bán acc Free Fire uy tín";
-export const SITE_TITLE = `${SITE_NAME} — ${SITE_TAGLINE}`;
+export const SITE_TAGLINE =
+  "Hệ Thống Thu Bán Acc Free Fire Uy Tín - Giá Tốt - Chất Lượng";
+export const SITE_TITLE = `${SITE_NAME} | ${SITE_TAGLINE}`;
 
 /**
  * Domain tuyệt đối của web (dùng cho canonical, OG, sitemap, robots).
