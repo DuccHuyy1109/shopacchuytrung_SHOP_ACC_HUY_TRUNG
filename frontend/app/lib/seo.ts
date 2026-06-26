@@ -39,13 +39,15 @@ export const SITE_KEYWORDS = [
 ];
 
 /**
- * Ảnh OG mặc định khi share link lên Facebook/Zalo... — dùng banner slideshow #3
- * của trang chủ (tỉ lệ 2:1, đẹp cho thẻ chia sẻ). Áp dụng cho trang chủ & các
- * trang không có ảnh riêng; trang chi tiết acc/bài đăng vẫn dùng ảnh của nó.
+ * Ảnh OG mặc định khi share link lên Facebook/Zalo... — bản nhẹ 1200×630 (JPG
+ * ~170KB) tạo từ banner slideshow #3. Dùng ảnh nhẹ vì Zalo/Facebook BỎ QUA ảnh
+ * preview quá nặng (ảnh slideshow gốc 2.5MB không hiện được). Áp dụng cho trang
+ * chủ & các trang không có ảnh riêng; trang chi tiết acc/bài đăng vẫn dùng ảnh nó.
+ * (Tạo lại bằng: sharp slideshow3.png -> resize 1200x630 cover -> jpeg q82 -> og.jpg)
  */
 export const DEFAULT_OG_IMAGE = {
-  url: "/image/slide/slideshow3.png",
-  width: 1774,
-  height: 887,
+  url: "/og.jpg",
+  width: 1200,
+  height: 630,
   alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
 };
